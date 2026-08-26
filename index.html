@@ -435,4 +435,19 @@
           const div = document.createElement('div');
           div.style.padding = "4px 0";
           div.style.borderBottom = "1px solid #eee";
-       
+                 div.innerHTML = `<div style="font-weight:bold">${data.name || 'Unnamed'}</div>
+                           <div style="font-size:11px;color:#555">${data.score || ''} ${data.percentage ? ' - ' + data.percentage : ''}</div>`;
+          board.appendChild(div);
+        });
+      } catch (e) {
+        console.error('Error loading leaderboard:', e);
+        board.innerHTML = 'Error loading records.';
+      }
+    }
+
+    // Small nicety: focus the name input on load
+    document.getElementById('inputName').focus();
+
+  </script>
+</body>
+</html>
