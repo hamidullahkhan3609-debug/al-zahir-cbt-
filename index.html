@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AL-ZAHIR ETEA COACHING ACADEMY - CBT Simulator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+    body { background-color: #f3f4f6; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    .urdu-text { font-family: 'Noto Nastaliq Urdu', serif; direction: rtl; text-align: right; }
+
+    header { background-color: #00529B; color: white; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; }
+    .logo-badge { background: white; color: #00529B; font-weight: bold; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; margin-right: 10px; }
+    .load-btn { background: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; }
+
+    .stats-bar { background: white; padding: 8px 16px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #1d4ed8; font-weight: 600; }
+    .progress-box { display: flex; align-items: center; gap: 8px; color: #374151; }
+    .progress-bar-bg { width: 80px; background: #e5e7eb; height: 10px; border-radius: 10px; overflow: hidden; }
+    .progress-bar-fill { background: #1d4ed8; height: 100%; width: 0%; transition: width 0.3s; }
+
+    .main-layout { flex: 1; display: flex; overflow: hidden; }
+    .profile-sidebar { width: 220px; background: white; padding: 12px; border-right: 1px solid #e5e7eb; font-size: 12px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
+    .field-label { color: #6b7280; display: block; font-size: 11px; }
+
+    .question-section { flex: 1; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; overflow-y: auto; }
+    .card { background: white; padding: 16px; border-radius: 6px; border: 1px solid #e5e7eb; max-width: 650px; margin: 0 auto; width: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .card-header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px; font-size: 13px; font-weight: bold; color: #4b5563; }
+    .subject-tag { background: #e5e7eb; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+
+    .q-title { font-size: 15px; font-weight: 600; color: #1f2937; margin-bottom: 16px; min-height: 40px; }
+    .option-item { display: flex; align-items: center; border: 1px solid #e5e7eb; padding: 10px; border-radius: 4px; margin-bottom: 8px; cursor: pointer; font-size: 14px; }
+    .option-item input { margin-right: 10px; }
+
+    .action-bar { max-width: 650px; margin: 12px auto 0; width: 100%; display: flex; justify-content: space-between; }
+    .btn-skip { background: #00529B; color: white; border: none; padding: 8px 24px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+    .btn-save { background: white; color: #00529B; border: 2px solid #00529B; padding: 8px 24px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+
+    .skipped-sidebar { width: 160px; background: white; padding: 12px; border-left: 1px solid #e5e7eb; }
+    .skipped-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
+    .skip-num-btn { background: #ffedd5; color: #9a3412; border: 1px solid #fdba74; padding: 6px; border-radius: 4px; font-weight: bold; font-size: 12px; cursor: pointer; }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 100; }
+    .modal-content { background: white; border-radius: 8px; padding: 24px; max-width: 480px; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .hidden { display: none !important; }
+
+    .input-field { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-top: 4px; margin-bottom: 12px; font-size: 14px; }
+    .btn-primary { width: 100%; background: #00529B; color: white; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+
+    /* Result Card Styling */
+    .result-card { border: 2px solid #00529B; border-radius: 8px; padding: 20px; background: #fafafa; text-align: left; }
+    .result-header { border-bottom: 2px solid #00529B; padding-bottom: 10px; margin-bottom: 12px; text-align: center; }
+
+    @media (max-width: 768px) {
+      body { height: auto; overflow: auto; }
+      .main-layout { flex-direction: column; overflow: visible; }
+      .profile-sidebar { width: 100%; border-right: none; border-bottom: 1px solid #e5e7eb; flex-direction: row; flex-wrap: wrap; justify-content: space-between; }
+      .skipped-sidebar { width: 100%; border-left: none; border-top: 1px solid #e5e7eb; }
+      .skipped-grid { grid-template-columns: repeat(6, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- STUDENT LOGIN MODAL -->
+  <div id="loginModal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 style="color: #00529B; margin-bottom: 4px; text-align: center; font-size: 15px;">AL-ZAHIR ETEA COACHING ACADEMY</h3>
+      <p style="font-size: 12px; color: #6b7280; margin-bottom: 16px; text-align: center;">Enter student credentials to start examination</p>
+      
+      <label class="field-label">Student Name</label>
+      <input type="text" id="inputName" class="input-field" placeholder="Enter full name">
+
+      <label class="field-label">Father's Name</label>
+      <input type="text" id="inputFather" class="input-field" placeholder="Enter father's name">
+
+      <button id="submitLoginBtn" class="btn-primary">Start Test</button>
+    </div>
+  </div>
+
+  <header>
+    <div style="display:flex; align-items:center;">
+      <div class="logo-badge">AZ</div>
+      <div>
+        <div style="font-size: 13px; font-weight: bold;">AL-ZAHIR ETEA COACHING ACADEMY</div>
+        <div style="font-size: 10px; opacity: 0.8;">Computer Based Testing System</div>
+      </div>
+    </div>
+    <!-- Hidden from students by default -->
+    <button id="adminBtn" class="load-btn hidden">Admin Panel</button>
+  </header>
+
+  <div class="stats-bar">
+    <div>Elapsed: <span id="elapsedTime">00:00</span></div>
+    <div>Remaining: <span id="remainingTime">30:00</span></div>
+    <div class="progress-box">
+      <span>Done:</span>
+      <div class="progress-bar-bg">
+        <div id="progressBar" class="progress-bar-fill"></div>
+      </div>
+      <span id="progressPercent">0%</span>
+    </div>
+  </div>
+
+  <div class="main-layout">
+    <!-- LEFT SIDEBAR -->
+    <div class="profile-sidebar">
+      <div><span class="field-label">Student Name</span><strong id="candName">--</strong></div>
+      <div><span class="field-label">Father Name</span><strong id="candFather">--</strong></div>
+      <div><span class="field-label">Academy</span><strong>Al-Zahir Academy</strong></div>
+      <div><span class="field-label">Current Subject</span><strong id="currentSubjectTag" style="color:#00529B">--</strong></div>
+    </div>
+
+    <!-- CENTER QUESTION SECTION -->
+    <div class="question-section">
+      <div class="card">
+        <div class="card-header">
+          <span id="questionCounter">Question No 0 out of 0</span>
+          <span class="subject-tag" id="subjectBadge">No Test Loaded</span>
+        </div>
+        
+        <div id="questionText" class="q-title">Please wait for test questions to load...</div>
+        <div id="optionsContainer"></div>
+      </div>
+
+      <div class="action-bar">
+        <button id="btnSkip" class="btn-skip">Skip</button>
+        <button id="btnSave" class="btn-save">Save & Next</button>
+      </div>
+    </div>
+
+    <!-- RIGHT SIDEBAR -->
+    <div class="skipped-sidebar">
+      <div style="font-size: 11px; font-weight: bold; color: #4b5563; text-transform: uppercase;">Skipped Questions</div>
+      <div id="skippedGrid" class="skipped-grid"></div>
+    </div>
+  </div>
+
+  <!-- ADMIN MODAL (HIDDEN FROM STUDENTS) -->
+  <div id="adminModal" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 600px;">
+      <h3 style="margin-bottom: 8px;">Admin Dashboard</h3>
+      
+      <h4 style="font-size: 12px; margin-top: 8px;">Upload Questions JSON:</h4>
+      <textarea id="jsonInput" style="width:100%; height:100px; padding:8px; font-size:11px; margin-bottom:8px;" placeholder="Paste JSON array here..."></textarea>
+      <button id="saveQuestionsBtn" style="padding:6px 12px; background:#00529B; color:white; border:none; border-radius:4px; margin-bottom: 12px; cursor:pointer;">Save Questions</button>
+
+      <h4 style="font-size: 12px;">Registered Students & Scores:</h4>
+      <div id="studentLeaderboard" style="max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 6px; font-size: 11px; background: #fafafa;"></div>
+
+      <div style="display:flex; justify-content:flex-end; margin-top: 12px;">
+        <button id="closeAdminBtn" style="padding:6px 12px; border:1px solid #ccc; background:white; border-radius:4px; cursor:pointer;">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GENERATED RESULT CARD MODAL -->
+  <div id="resultModal" class="modal-overlay hidden">
+    <div class="modal-content" style="text-align: center;">
+      <div class="result-card" id="printableCard">
+        <div class="result-header">
+          <h2 style="color:#00529B; font-size: 16px;">AL-ZAHIR ETEA COACHING ACADEMY</h2>
+          <p style="font-size: 11px; color:#555;">Official Result Card</p>
+        </div>
+        <p style="font-size: 13px; margin-bottom: 4px;"><strong>Student Name:</strong> <span id="resName"></span></p>
+        <p style="font-size: 13px; margin-bottom: 12px;"><strong>Father Name:</strong> <span id="resFather"></span></p>
+        <hr style="margin-bottom: 12px; border: 0; border-top: 1px solid #ddd;">
+        <div id="finalScore" style="font-size:36px; font-weight:bold; color:#00529B; margin-bottom:4px;">0 / 0</div>
+        <p id="finalPercent" style="color:#16a34a; font-size:16px; font-weight: bold; margin-bottom:16px;">Percentage: 0%</p>
+      </div>
+      <button id="printCardBtn" style="margin-top: 12px; width:100%; background:#16a34a; color:white; border:none; padding:10px; border-radius:4px; font-weight:bold; cursor:pointer;">Print Result Card</button>
+    </div>
+  </div>
+
+  <!-- FIREBASE MODULE SCRIPT -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, doc, getDoc, setDoc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+    // Your exact Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyD2OYE6tVb4mukv0ZdZe5kjFL0d2gMdi6Y",
+      authDomain: "al-zahir-cbt.firebaseapp.com",
+      projectId: "al-zahir-cbt",
+      storageBucket: "al-zahir-cbt.firebasestorage.app",
+      messagingSenderId: "308103403152",
+      appId: "1:308103403152:web:3dc29dd456d9b6a9fdea15"
+    };
+
+    // Initialize Firebase & Firestore
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let studentName = "";
+    let studentFather = "";
+    let studentDocId = "";
+    let questions = [];
+    let currentIndex = 0;
+    let selectedOption = null;
+    let lockedAnswers = {};
+    let skippedList = [];
+    let elapsedSeconds = 0;
+    let timerInterval = null;
+
+    // Check for Admin URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('admin') === 'true') {
+      document.getElementById('adminBtn').classList.remove('hidden');
+    }
+
+    // Event Listeners
+    document.getElementById('submitLoginBtn').addEventListener('click', submitLogin);
+    document.getElementById('btnSkip').addEventListener('click', skipQuestion);
+    document.getElementById('btnSave').addEventListener('click', saveAndNext);
+    document.getElementById('adminBtn').addEventListener('click', openAdminModal);
+    document.getElementById('closeAdminBtn').addEventListener('click', closeAdminModal);
+    document.getElementById('saveQuestionsBtn').addEventListener('click', loadCustomQuestions);
+    document.getElementById('printCardBtn').addEventListener('click', () => window.print());
+
+    async function submitLogin() {
+      const name = document.getElementById('inputName').value.trim();
+      const father = document.getElementById('inputFather').value.trim();
+
+      if (!name || !father) {
+        alert("Please enter both Name and Father's Name.");
+        return;
+      }
+
+      studentName = name;
+      studentFather = father;
+      document.getElementById('candName').innerText = studentName;
+      document.getElementById('candFather').innerText = studentFather;
+
+      try {
+        const docRef = await addDoc(collection(db, "students"), {
+          name: studentName,
+          fatherName: studentFather,
+          loginTime: new Date().toISOString(),
+          score: "Pending Submission",
+          percentage: "Pending"
+        });
+        studentDocId = docRef.id;
+        document.getElementById('loginModal').classList.add('hidden');
+        startTestSession();
+      } catch (e) {
+        alert("Database Error: Make sure Firestore is enabled in Firebase Console.");
+      }
+    }
+
+    async function startTestSession() {
+      try {
+        const docSnap = await getDoc(doc(db, "tests", "class7"));
+        if (docSnap.exists() && docSnap.data().questions) {
+          questions = docSnap.data().questions;
+          startTimer();
+          renderQuestion();
+        } else {
+          document.getElementById('questionText').innerText = "No test currently uploaded by Admin.";
+        }
+      } catch (e) {
+        document.getElementById('questionText').innerText = "Error loading test. Check Firebase connection.";
+      }
+    }
+
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        elapsedSeconds++;
+        let mins = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
+        let secs = String(elapsedSeconds % 60).padStart(2, '0');
+        document.getElementById('elapsedTime').innerText = `${mins}:${secs}`;
+      }, 1000);
+    }
+
+    function renderQuestion() {
+      if (questions.length === 0) return;
+      const q = questions[currentIndex];
+      selectedOption = null;
+
+      document.getElementById('questionCounter').innerText = `Question No ${currentIndex + 1} out of ${questions.length}`;
+      document.getElementById('subjectBadge').innerText = q.subject || 'General';
+      document.getElementById('currentSubjectTag').innerText = q.subject || 'General';
+
+      const qTextEl = document.getElementById('questionText');
+      qTextEl.innerText = q.question;
+      if (/[\u0600-\u06FF]/.test(q.question)) {
+        qTextEl.classList.add('urdu-text');
+      } else {
+        qTextEl.classList.remove('urdu-text');
+      }
+
+      const container = document.getElementById('optionsContainer');
+      container.innerHTML = '';
+
+      q.options.forEach((opt, idx) => {
+        const isUrdu = /[\u0600-\u06FF]/.test(opt);
+        const label = document.createElement('label');
+        label.className = `option-item ${isUrdu ? 'urdu-text' : ''}`;
+        
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'opt';
+        radio.value = idx;
+        radio.onclick = () => { selectedOption = idx; };
+        
+        const span = document.createElement('span');
+        span.innerText = opt;
+
+        label.appendChild(radio);
+        label.appendChild(span);
+        container.appendChild(label);
+      });
+
+      updateProgressBar();
+    }
+
+    function saveAndNext() {
+      if (selectedOption !== null) {
+        lockedAnswers[currentIndex] = selectedOption;
+        skippedList = skippedList.filter(idx => idx !== currentIndex);
+        renderSkipped();
+        nextAvailableQuestion();
+      } else {
+        alert("Please select an answer first!");
+      }
+    }
+
+    function skipQuestion() {
+      if (!skippedList.includes(currentIndex) && lockedAnswers[currentIndex] === undefined) {
+        skippedList.push(currentIndex);
+        renderSkipped();
+      }
+      nextAvailableQuestion();
+    }
+
+    function nextAvailableQuestion() {
+      for (let i = 0; i < questions.length; i++) {
+        let checkIndex = (currentIndex + 1 + i) % questions.length;
+        if (lockedAnswers[checkIndex] === undefined) {
+          currentIndex = checkIndex;
+          renderQuestion();
+          return;
+        }
+      }
+      finishTest();
+    }
+
+    function renderSkipped() {
+      const grid = document.getElementById('skippedGrid');
+      grid.innerHTML = '';
+      skippedList.forEach(idx => {
+        const btn = document.createElement('button');
+        btn.className = "skip-num-btn";
+        btn.innerText = idx + 1;
+        btn.onclick = () => {
+          currentIndex = idx;
+          renderQuestion();
+        };
+        grid.appendChild(btn);
+      });
+    }
+
+    function updateProgressBar() {
+      if (questions.length === 0) return;
+      const total = questions.length;
+      const completed = Object.keys(lockedAnswers).length;
+      const pct = Math.round((completed / total) * 100);
+      document.getElementById('progressBar').style.width = pct + '%';
+      document.getElementById('progressPercent').innerText = pct + '%';
+    }
+
+    async function finishTest() {
+      clearInterval(timerInterval);
+      let score = 0;
+      questions.forEach((q, idx) => {
+        if (lockedAnswers[idx] === q.answer) score++;
+      });
+
+      const percentage = Math.round((score / questions.length) * 100);
+
+      if (studentDocId) {
+        await updateDoc(doc(db, "students", studentDocId), {
+          score: `${score} / ${questions.length}`,
+          percentage: `${percentage}%`,
+          completedAt: new Date().toISOString()
+        });
+      }
+
+      document.getElementById('resName').innerText = studentName;
+      document.getElementById('resFather').innerText = studentFather;
+      document.getElementById('finalScore').innerText = `${score} / ${questions.length}`;
+      document.getElementById('finalPercent').innerText = `Percentage: ${percentage}%`;
+      document.getElementById('resultModal').classList.remove('hidden');
+    }
+
+    function openAdminModal() {
+      const password = prompt("Enter Admin Password:");
+      if (password === "admin123") {
+        document.getElementById('adminModal').classList.remove('hidden');
+        loadStudentLeaderboard();
+      } else {
+        alert("Incorrect password.");
+      }
+    }
+
+    function closeAdminModal() { 
+      document.getElementById('adminModal').classList.add('hidden'); 
+    }
+
+    async function loadCustomQuestions() {
+      const text = document.getElementById('jsonInput').value;
+      try {
+        const parsed = JSON.parse(text);
+        if (Array.isArray(parsed)) {
+          await setDoc(doc(db, "tests", "class7"), { questions: parsed });
+          alert("Questions saved to cloud successfully!");
+          closeAdminModal();
+        }
+      } catch (e) {
+        alert("Invalid JSON format.");
+      }
+    }
+
+    async function loadStudentLeaderboard() {
+      const board = document.getElementById('studentLeaderboard');
+      board.innerHTML = 'Loading records...';
+      try {
+        const querySnapshot = await getDocs(collection(db, "students"));
+        board.innerHTML = '';
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const div = document.createElement('div');
+          div.style.padding = "4px 0";
+          div.style.borderBottom = "1px solid #eee";
+          div.innerHTML = `<strong>${data.name}</strong> (S/O ${data.fatherName}) — Score: <strong>${data.score}</strong> (${data.percentage})`;
+          board.appendChild(div);
+        });
+      } catch (e) {
+        board.innerHTML = 'Failed to fetch student data.';
+      }
+    }
+  </script>
+</body>
+</html>
