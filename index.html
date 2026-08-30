@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AL-ZAHIR ETEA COACHING ACADEMY - CBT Portal</title>
+  <title>AL-ZAHIR ETEA COACHING & SCIENCE TUITION ACADEMY</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
   
   <style>
@@ -15,15 +15,24 @@
     header { background-color: #00529B; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
     .logo-container { display: flex; align-items: center; gap: 10px; }
     .logo-badge { background: white; color: #00529B; font-weight: bold; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; }
-    
-    .nav-btn { background: #f59e0b; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px; transition: 0.2s; }
-    .nav-btn:hover { background: #d97706; }
 
-    /* Pages Container */
+    /* Page Views Control */
     .page-view { display: none; flex: 1; width: 100%; }
     .page-view.active { display: flex; flex-direction: column; }
 
-    /* STUDENT PAGE STYLES */
+    /* PAGE 1: WELCOME SCREEN */
+    .welcome-container { max-width: 480px; margin: auto; background: white; padding: 32px 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; border: 1px solid #e5e7eb; width: 90%; }
+    .welcome-logo { width: 160px; height: auto; margin-bottom: 16px; border-radius: 8px; }
+    .welcome-title { color: #00529B; font-size: 18px; font-weight: bold; margin-bottom: 6px; }
+    .welcome-subtitle { font-size: 13px; color: #6b7280; margin-bottom: 24px; }
+    
+    .btn-portal { width: 100%; padding: 14px; margin-bottom: 12px; border: none; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .btn-student { background: #00529B; color: white; }
+    .btn-student:hover { background: #003d73; }
+    .btn-admin { background: #f59e0b; color: white; }
+    .btn-admin:hover { background: #d97706; }
+
+    /* PAGE 2: STUDENT EXAM SCREEN */
     .stats-bar { background: white; padding: 10px 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #1d4ed8; font-weight: 600; }
     .progress-box { display: flex; align-items: center; gap: 8px; color: #374151; }
     .progress-bar-bg { width: 100px; background: #e5e7eb; height: 10px; border-radius: 10px; overflow: hidden; }
@@ -39,8 +48,7 @@
     .subject-tag { background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 4px; font-size: 11px; }
 
     .q-title { font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 20px; min-height: 45px; }
-    .option-item { display: flex; align-items: center; border: 1px solid #e5e7eb; padding: 12px; border-radius: 6px; margin-bottom: 10px; cursor: pointer; font-size: 14px; transition: 0.15s; }
-    .option-item:hover { border-color: #00529B; background: #f0f7ff; }
+    .option-item { display: flex; align-items: center; border: 1px solid #e5e7eb; padding: 12px; border-radius: 6px; margin-bottom: 10px; cursor: pointer; font-size: 14px; }
     .option-item input { margin-right: 12px; }
 
     .action-bar { max-width: 700px; margin: 16px auto 0; width: 100%; display: flex; justify-content: space-between; }
@@ -51,7 +59,7 @@
     .skipped-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
     .skip-num-btn { background: #ffedd5; color: #9a3412; border: 1px solid #fdba74; padding: 8px; border-radius: 4px; font-weight: bold; font-size: 12px; cursor: pointer; }
 
-    /* ADMIN PAGE STYLES */
+    /* PAGE 3: ADMIN DASHBOARD */
     .admin-container { max-width: 800px; margin: 24px auto; width: 95%; background: white; padding: 24px; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
     .admin-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #00529B; padding-bottom: 12px; margin-bottom: 20px; }
     .option-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
@@ -60,13 +68,25 @@
     .input-field { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; margin-top: 4px; margin-bottom: 12px; font-size: 14px; }
     .btn-primary { width: 100%; background: #00529B; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
 
-    /* MODAL OVERLAYS */
+    /* PAGE 4: FULL-SCREEN RESULT VIEW */
+    .result-full-page { max-width: 650px; margin: 40px auto; width: 90%; background: white; border: 2px solid #00529B; border-radius: 12px; padding: 32px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); text-align: center; }
+    .result-header { border-bottom: 2px solid #00529B; padding-bottom: 16px; margin-bottom: 24px; }
+    .score-display { font-size: 52px; font-weight: bold; color: #00529B; margin: 16px 0 4px; }
+    .percent-display { color: #16a34a; font-size: 22px; font-weight: bold; margin-bottom: 24px; }
+
+    /* MODAL OVERLAY (FOR STUDENT LOGIN) */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 100; }
     .modal-content { background: white; border-radius: 8px; padding: 24px; max-width: 480px; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
     .hidden { display: none !important; }
 
-    .result-card { border: 2px solid #00529B; border-radius: 8px; padding: 24px; background: #fafafa; text-align: left; }
-    .result-header { border-bottom: 2px solid #00529B; padding-bottom: 12px; margin-bottom: 16px; text-align: center; }
+    /* PRINT AND PDF GENERATION STYLING */
+    @media print {
+      header, .no-print { display: none !important; }
+      body { background: white; }
+      .page-view { display: none !important; }
+      #resultPage { display: block !important; }
+      .result-full-page { border: none; box-shadow: none; margin: 0; width: 100%; max-width: 100%; padding: 0; }
+    }
 
     @media (max-width: 768px) {
       .main-layout { flex-direction: column; overflow: visible; }
@@ -78,7 +98,7 @@
 </head>
 <body>
 
-  <!-- HEADER NAVIGATION -->
+  <!-- HEADER -->
   <header>
     <div class="logo-container">
       <div class="logo-badge">AZ</div>
@@ -87,17 +107,29 @@
         <div style="font-size: 11px; opacity: 0.85;">Computer Based Testing Portal</div>
       </div>
     </div>
-    <button id="pageToggleBtn" class="nav-btn">Switch to Admin View</button>
+    <button id="homeNavBtn" style="background: transparent; color: white; border: 1px solid white; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">Main Menu</button>
   </header>
 
-  <!-- PAGE 1: STUDENT EXAMINATION VIEW -->
-  <div id="studentPage" class="page-view active">
+  <!-- PAGE 1: WELCOME LANDING PAGE -->
+  <div id="welcomePage" class="page-view active">
+    <div class="welcome-container">
+      <img src="logo.png" alt="Al-Zahir Logo" class="welcome-logo" onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=AZ+Academy';">
+      <h2 class="welcome-title">AL-ZAHIR ETEA COACHING & SCIENCE TUITION ACADEMY</h2>
+      <p class="welcome-subtitle">Computer Based Examination Portal</p>
+
+      <button id="selectStudentBtn" class="btn-portal btn-student">Student Portal</button>
+      <button id="selectAdminBtn" class="btn-portal btn-admin">Admin Panel</button>
+    </div>
+  </div>
+
+  <!-- PAGE 2: STUDENT EXAMINATION VIEW -->
+  <div id="studentPage" class="page-view">
     
     <!-- STUDENT LOGIN MODAL -->
     <div id="loginModal" class="modal-overlay">
       <div class="modal-content">
-        <h3 style="color: #00529B; margin-bottom: 4px; text-align: center; font-size: 16px;">AL-ZAHIR ETEA COACHING ACADEMY</h3>
-        <p style="font-size: 12px; color: #6b7280; margin-bottom: 20px; text-align: center;">Enter student credentials to start examination</p>
+        <h3 style="color: #00529B; margin-bottom: 4px; text-align: center; font-size: 16px;">STUDENT LOGIN</h3>
+        <p style="font-size: 12px; color: #6b7280; margin-bottom: 20px; text-align: center;">Enter your details to start the exam</p>
         
         <label class="field-label">Student Name</label>
         <input type="text" id="inputName" class="input-field" placeholder="Enter full name">
@@ -153,18 +185,17 @@
     </div>
   </div>
 
-  <!-- PAGE 2: ADMIN MANAGEMENT DASHBOARD -->
+  <!-- PAGE 3: ADMIN MANAGEMENT DASHBOARD -->
   <div id="adminPage" class="page-view">
     <div class="admin-container">
       <div class="admin-header">
         <div>
-          <h2 style="color:#00529B;">Admin Control Panel</h2>
-          <p style="font-size: 12px; color: #6b7280;">Manage test questions and view student scores</p>
+          <h2 style="color:#00529B;">Admin Dashboard</h2>
+          <p style="font-size: 12px; color: #6b7280;">Manage question bank & student scores</p>
         </div>
-        <button id="backToStudentBtn" style="padding: 6px 12px; background: #e5e7eb; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px;">Go to Exam Screen</button>
       </div>
 
-      <h3 style="font-size: 14px; margin-bottom: 12px; color: #1f2937;">Add New Question</h3>
+      <h3 style="font-size: 14px; margin-bottom: 12px; color: #1f2937;">Add Question</h3>
       
       <label class="field-label">Subject</label>
       <select id="formSubject" class="input-field">
@@ -198,34 +229,40 @@
       </div>
 
       <div style="display:flex; gap:10px; margin-top:10px;">
-        <button id="addSingleQBtn" style="flex:1; background:#16a34a; color:white; border:none; padding:10px; border-radius:6px; font-weight:bold; cursor:pointer;">Save Question to Test</button>
-        <button id="clearAllQBtn" style="background:#dc2626; color:white; border:none; padding:10px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">Delete All Questions</button>
+        <button id="addSingleQBtn" style="flex:1; background:#16a34a; color:white; border:none; padding:10px; border-radius:6px; font-weight:bold; cursor:pointer;">Save Question to Cloud</button>
+        <button id="clearAllQBtn" style="background:#dc2626; color:white; border:none; padding:10px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">Clear Question Bank</button>
       </div>
 
       <hr style="margin: 20px 0;">
 
-      <h4 style="font-size: 13px; margin-bottom: 8px;">Total Saved Questions: <span id="cloudCount" style="color:#00529B;">0</span></h4>
+      <h4 style="font-size: 13px; margin-bottom: 8px;">Saved Questions Count: <span id="cloudCount" style="color:#00529B;">0</span></h4>
       
-      <h4 style="font-size: 13px; margin-top: 16px; margin-bottom: 8px;">Registered Students Leaderboard</h4>
+      <h4 style="font-size: 13px; margin-top: 16px; margin-bottom: 8px;">Student Leaderboard</h4>
       <div id="studentLeaderboard" style="max-height: 180px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; font-size: 12px; background: #fafafa; border-radius: 6px;"></div>
     </div>
   </div>
 
-  <!-- RESULT CARD MODAL -->
-  <div id="resultModal" class="modal-overlay hidden">
-    <div class="modal-content" style="text-align: center;">
-      <div class="result-card" id="printableCard">
-        <div class="result-header">
-          <h2 style="color:#00529B; font-size: 18px;">AL-ZAHIR ETEA COACHING ACADEMY</h2>
-          <p style="font-size: 12px; color:#555;">Official Result Card</p>
-        </div>
-        <p style="font-size: 14px; margin-bottom: 4px;"><strong>Student Name:</strong> <span id="resName"></span></p>
-        <p style="font-size: 14px; margin-bottom: 12px;"><strong>Father Name:</strong> <span id="resFather"></span></p>
-        <hr style="margin-bottom: 12px; border: 0; border-top: 1px solid #ddd;">
-        <div id="finalScore" style="font-size:40px; font-weight:bold; color:#00529B; margin-bottom:4px;">0 / 0</div>
-        <p id="finalPercent" style="color:#16a34a; font-size:18px; font-weight: bold; margin-bottom:16px;">Percentage: 0%</p>
+  <!-- PAGE 4: FULL SCREEN RESULT PAGE -->
+  <div id="resultPage" class="page-view">
+    <div class="result-full-page">
+      <div class="result-header">
+        <img src="logo.png" alt="Logo" style="width: 100px; height: auto; margin-bottom: 8px;" onerror="this.style.display='none'">
+        <h2 style="color:#00529B; font-size: 20px;">AL-ZAHIR ETEA COACHING ACADEMY</h2>
+        <p style="font-size: 13px; color:#555;">Official Examination Result Card</p>
       </div>
-      <button id="printCardBtn" style="margin-top: 12px; width:100%; background:#16a34a; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer;">Print Result Card</button>
+
+      <div style="text-align: left; max-width: 400px; margin: 0 auto 20px; font-size: 15px; line-height: 1.6;">
+        <p><strong>Student Name:</strong> <span id="resName">--</span></p>
+        <p><strong>Father Name:</strong> <span id="resFather">--</span></p>
+        <p><strong>Academy:</strong> Al-Zahir ETEA Academy</p>
+      </div>
+
+      <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 16px;">
+
+      <div class="score-display" id="finalScore">0 / 0</div>
+      <div class="percent-display" id="finalPercent">Percentage: 0%</div>
+
+      <button id="downloadPdfBtn" class="no-print" style="width:100%; max-width: 320px; background:#16a34a; color:white; border:none; padding:14px; border-radius:6px; font-weight:bold; cursor:pointer; font-size: 15px;">Download / Print PDF Result</button>
     </div>
   </div>
 
@@ -254,56 +291,52 @@
     let skippedList = [];
     let elapsedSeconds = 0;
     let timerInterval = null;
-    let isAdminAuthenticated = false;
 
-    // Navigation & Page Switch Controls
-    const pageToggleBtn = document.getElementById('pageToggleBtn');
-    const backToStudentBtn = document.getElementById('backToStudentBtn');
+    // Page Elements
+    const welcomePage = document.getElementById('welcomePage');
     const studentPage = document.getElementById('studentPage');
     const adminPage = document.getElementById('adminPage');
+    const resultPage = document.getElementById('resultPage');
+    const loginModal = document.getElementById('loginModal');
 
-    pageToggleBtn.addEventListener('click', toggleAdminPage);
-    backToStudentBtn.addEventListener('click', showStudentPage);
+    document.getElementById('homeNavBtn').addEventListener('click', showWelcomePage);
+    document.getElementById('selectStudentBtn').addEventListener('click', openStudentFlow);
+    document.getElementById('selectAdminBtn').addEventListener('click', openAdminFlow);
 
-    function toggleAdminPage() {
-      if (!isAdminAuthenticated) {
-        const password = prompt("Enter Admin Password:");
-        if (password === "admin123") {
-          isAdminAuthenticated = true;
-          showAdminPage();
-        } else {
-          alert("Incorrect password.");
-        }
+    function showWelcomePage() {
+      studentPage.classList.remove('active');
+      adminPage.classList.remove('active');
+      resultPage.classList.remove('active');
+      welcomePage.classList.add('active');
+    }
+
+    function openStudentFlow() {
+      welcomePage.classList.remove('active');
+      studentPage.classList.add('active');
+      loginModal.classList.remove('hidden');
+    }
+
+    function openAdminFlow() {
+      const password = prompt("Enter Admin Password:");
+      if (password === "admin123") {
+        welcomePage.classList.remove('active');
+        studentPage.classList.remove('active');
+        resultPage.classList.remove('active');
+        adminPage.classList.add('active');
+        fetchCurrentCloudQuestions();
+        loadStudentLeaderboard();
       } else {
-        if (adminPage.classList.contains('active')) {
-          showStudentPage();
-        } else {
-          showAdminPage();
-        }
+        alert("Incorrect password.");
       }
     }
 
-    function showAdminPage() {
-      studentPage.classList.remove('active');
-      adminPage.classList.add('active');
-      pageToggleBtn.innerText = "Switch to Student Exam";
-      fetchCurrentCloudQuestions();
-      loadStudentLeaderboard();
-    }
-
-    function showStudentPage() {
-      adminPage.classList.remove('active');
-      studentPage.classList.add('active');
-      pageToggleBtn.innerText = "Switch to Admin View";
-    }
-
-    // Student Examination Logic
+    // Student Examination System
     document.getElementById('submitLoginBtn').addEventListener('click', submitLogin);
     document.getElementById('btnSkip').addEventListener('click', skipQuestion);
     document.getElementById('btnSave').addEventListener('click', saveAndNext);
     document.getElementById('addSingleQBtn').addEventListener('click', addSingleQuestion);
     document.getElementById('clearAllQBtn').addEventListener('click', clearAllQuestions);
-    document.getElementById('printCardBtn').addEventListener('click', () => window.print());
+    document.getElementById('downloadPdfBtn').addEventListener('click', () => window.print());
 
     async function submitLogin() {
       const name = document.getElementById('inputName').value.trim();
@@ -328,10 +361,10 @@
           percentage: "Pending"
         });
         studentDocId = docRef.id;
-        document.getElementById('loginModal').classList.add('hidden');
+        loginModal.classList.add('hidden');
         startTestSession();
       } catch (e) {
-        alert("Database Error: Make sure Firestore rules are published in test mode.");
+        alert("Database Error: Check Firebase permissions.");
       }
     }
 
@@ -354,7 +387,6 @@
       timerInterval = setInterval(() => {
         elapsedSeconds++;
         let mins = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
-        let secs = String(elapsedSeconds % 60).padStart(2, '0');
         document.getElementById('elapsedTime').innerText = `${mins}:${secs}`;
       }, 1000);
     }
@@ -482,11 +514,14 @@
         });
       }
 
+      // Display Full Page Result
       document.getElementById('resName').innerText = studentName;
       document.getElementById('resFather').innerText = studentFather;
       document.getElementById('finalScore').innerText = `${score} / ${questions.length}`;
       document.getElementById('finalPercent').innerText = `Percentage: ${percentage}%`;
-      document.getElementById('resultModal').classList.remove('hidden');
+
+      studentPage.classList.remove('active');
+      resultPage.classList.add('active');
     }
 
     // Admin Dashboard Operations
