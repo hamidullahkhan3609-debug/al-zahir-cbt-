@@ -137,7 +137,7 @@
     </div>
   </div>
 
-  <!-- ADMIN MODAL (HIDDEN FROM STUDENTS) -->
+  <!-- ADMIN MODAL -->
   <div id="adminModal" class="modal-overlay hidden">
     <div class="modal-content" style="max-width: 600px;">
       <h3 style="margin-bottom: 8px;">Admin Dashboard</h3>
@@ -178,7 +178,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
     import { getFirestore, collection, addDoc, doc, getDoc, setDoc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
-    // Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyD2OYE6tVb4mukv0ZdZe5kjFL0d2gMdi6Y",
       authDomain: "al-zahir-cbt.firebaseapp.com",
@@ -188,7 +187,6 @@
       appId: "1:308103403152:web:3dc29dd456d9b6a9fdea15"
     };
 
-    // Initialize Firebase & Firestore
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
@@ -197,19 +195,16 @@
     let studentDocId = "";
     let questions = [];
     let currentIndex = 0;
-    let selectedOption = null;
     let lockedAnswers = {};
     let skippedList = [];
     let elapsedSeconds = 0;
     let timerInterval = null;
 
-    // Check for Admin URL parameter
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('admin') === 'true') {
       document.getElementById('adminBtn').classList.remove('hidden');
     }
 
-    // Event Listeners
     document.getElementById('submitLoginBtn').addEventListener('click', submitLogin);
     document.getElementById('btnSkip').addEventListener('click', skipQuestion);
     document.getElementById('btnSave').addEventListener('click', saveAndNext);
@@ -244,7 +239,7 @@
         document.getElementById('loginModal').classList.add('hidden');
         startTestSession();
       } catch (e) {
-        alert("Database Error: Make sure Firestore is enabled in Firebase Console.");
+        alert("Database Error: Make sure Firestore rules are set to public test mode.");
       }
     }
 
@@ -275,7 +270,6 @@
     function renderQuestion() {
       if (questions.length === 0) return;
       const q = questions[currentIndex];
-      selectedOption = null;
 
       document.getElementById('questionCounter').innerText = `Question No ${currentIndex + 1} out of ${questions.length}`;
       document.getElementById('subjectBadge').innerText = q.subject || 'General';
@@ -301,7 +295,10 @@
         radio.type = 'radio';
         radio.name = 'opt';
         radio.value = idx;
-        radio.onclick = () => { selectedOption = idx; };
+
+        if (lockedAnswers[currentIndex] !== undefined && Number(lockedAnswers[currentIndex]) === idx) {
+          radio.checked = true;
+        }
         
         const span = document.createElement('span');
         span.innerText = opt;
@@ -315,8 +312,9 @@
     }
 
     function saveAndNext() {
-      if (selectedOption !== null) {
-        lockedAnswers[currentIndex] = selectedOption;
+      const selectedRadio = document.querySelector('input[name="opt"]:checked');
+      if (selectedRadio) {
+        lockedAnswers[currentIndex] = parseInt(selectedRadio.value, 10);
         skippedList = skippedList.filter(idx => idx !== currentIndex);
         renderSkipped();
         nextAvailableQuestion();
@@ -372,9 +370,13 @@
     async function finishTest() {
       clearInterval(timerInterval);
       let score = 0;
+
       questions.forEach((q, idx) => {
-        // Robust numeric comparison: handles both string & integer formats for option indexes
-        if (lockedAnswers[idx] !== undefined && Number(lockedAnswers[idx]) === Number(q.answer)) {
+        const studentAns = lockedAnswers[idx];
+        const correctAns = Number(q.answer);
+
+        // Evaluates both 0-based and 1-based JSON answer formats
+        if (studentAns !== undefined && (studentAns === correctAns || studentAns + 1 === correctAns)) {
           score++;
         }
       });
@@ -435,19 +437,13 @@
           const div = document.createElement('div');
           div.style.padding = "4px 0";
           div.style.borderBottom = "1px solid #eee";
-                 div.innerHTML = `<div style="font-weight:bold">${data.name || 'Unnamed'}</div>
-                           <div style="font-size:11px;color:#555">${data.score || ''} ${data.percentage ? ' - ' + data.percentage : ''}</div>`;
+          div.innerHTML = `<strong>${data.name}</strong> (S/O ${data.fatherName}) — Score: <strong>${data.score}</strong> (${data.percentage})`;
           board.appendChild(div);
         });
       } catch (e) {
-        console.error('Error loading leaderboard:', e);
-        board.innerHTML = 'Error loading records.';
+        board.innerHTML = 'Failed to fetch student data.';
       }
     }
-
-    // Small nicety: focus the name input on load
-    document.getElementById('inputName').focus();
-
   </script>
 </body>
 </html>
