@@ -42,15 +42,19 @@
     .skip-num-btn { background: #ffedd5; color: #9a3412; border: 1px solid #fdba74; padding: 6px; border-radius: 4px; font-weight: bold; font-size: 12px; cursor: pointer; }
 
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 100; }
-    .modal-content { background: white; border-radius: 8px; padding: 24px; max-width: 480px; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .modal-content { background: white; border-radius: 8px; padding: 20px; max-width: 550px; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; }
     .hidden { display: none !important; }
 
-    .input-field { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-top: 4px; margin-bottom: 12px; font-size: 14px; }
+    .input-field { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-top: 2px; margin-bottom: 8px; font-size: 13px; }
     .btn-primary { width: 100%; background: #00529B; color: white; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer; }
 
     /* Result Card Styling */
     .result-card { border: 2px solid #00529B; border-radius: 8px; padding: 20px; background: #fafafa; text-align: left; }
     .result-header { border-bottom: 2px solid #00529B; padding-bottom: 10px; margin-bottom: 12px; text-align: center; }
+
+    /* Admin Form Layout */
+    .option-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .option-row input[type="text"] { flex: 1; margin: 0; }
 
     @media (max-width: 768px) {
       body { height: auto; overflow: auto; }
@@ -87,7 +91,6 @@
         <div style="font-size: 10px; opacity: 0.8;">Computer Based Testing System</div>
       </div>
     </div>
-    <!-- Hidden from students by default -->
     <button id="adminBtn" class="load-btn hidden">Admin Panel</button>
   </header>
 
@@ -104,7 +107,6 @@
   </div>
 
   <div class="main-layout">
-    <!-- LEFT SIDEBAR -->
     <div class="profile-sidebar">
       <div><span class="field-label">Student Name</span><strong id="candName">--</strong></div>
       <div><span class="field-label">Father Name</span><strong id="candFather">--</strong></div>
@@ -112,7 +114,6 @@
       <div><span class="field-label">Current Subject</span><strong id="currentSubjectTag" style="color:#00529B">--</strong></div>
     </div>
 
-    <!-- CENTER QUESTION SECTION -->
     <div class="question-section">
       <div class="card">
         <div class="card-header">
@@ -130,32 +131,67 @@
       </div>
     </div>
 
-    <!-- RIGHT SIDEBAR -->
     <div class="skipped-sidebar">
       <div style="font-size: 11px; font-weight: bold; color: #4b5563; text-transform: uppercase;">Skipped Questions</div>
       <div id="skippedGrid" class="skipped-grid"></div>
     </div>
   </div>
 
-  <!-- ADMIN MODAL -->
+  <!-- ADMIN FORM BUILDER MODAL -->
   <div id="adminModal" class="modal-overlay hidden">
-    <div class="modal-content" style="max-width: 600px;">
-      <h3 style="margin-bottom: 8px;">Admin Dashboard</h3>
+    <div class="modal-content">
+      <h3 style="margin-bottom: 8px; color:#00529B;">Question Form Builder</h3>
       
-      <h4 style="font-size: 12px; margin-top: 8px;">Upload Questions JSON:</h4>
-      <textarea id="jsonInput" style="width:100%; height:100px; padding:8px; font-size:11px; margin-bottom:8px;" placeholder="Paste JSON array here..."></textarea>
-      <button id="saveQuestionsBtn" style="padding:6px 12px; background:#00529B; color:white; border:none; border-radius:4px; margin-bottom: 12px; cursor:pointer;">Save Questions</button>
+      <label class="field-label">Select Subject</label>
+      <select id="formSubject" class="input-field">
+        <option value="Mathematics">Mathematics</option>
+        <option value="General Science">General Science</option>
+        <option value="English">English</option>
+        <option value="Urdu">Urdu</option>
+        <option value="Islamiat">Islamiat</option>
+      </select>
 
-      <h4 style="font-size: 12px;">Registered Students & Scores:</h4>
-      <div id="studentLeaderboard" style="max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 6px; font-size: 11px; background: #fafafa;"></div>
+      <label class="field-label">Question Text</label>
+      <input type="text" id="formQuestion" class="input-field" placeholder="Type question here...">
+
+      <label class="field-label" style="margin-top: 4px;">Options (Select radio for correct answer)</label>
+      
+      <div class="option-row">
+        <input type="radio" name="correctOpt" value="0" checked>
+        <input type="text" id="opt0" class="input-field" placeholder="Option A">
+      </div>
+      <div class="option-row">
+        <input type="radio" name="correctOpt" value="1">
+        <input type="text" id="opt1" class="input-field" placeholder="Option B">
+      </div>
+      <div class="option-row">
+        <input type="radio" name="correctOpt" value="2">
+        <input type="text" id="opt2" class="input-field" placeholder="Option C">
+      </div>
+      <div class="option-row">
+        <input type="radio" name="correctOpt" value="3">
+        <input type="text" id="opt3" class="input-field" placeholder="Option D">
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button id="addSingleQBtn" style="flex:1; background:#16a34a; color:white; border:none; padding:8px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:12px;">Add Question to Test</button>
+        <button id="clearAllQBtn" style="background:#dc2626; color:white; border:none; padding:8px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:12px;">Clear All</button>
+      </div>
+
+      <hr style="margin: 12px 0;">
+
+      <h4 style="font-size: 12px;">Current Cloud Question Count: <span id="cloudCount" style="color:#00529B;">0</span></h4>
+      
+      <h4 style="font-size: 12px; margin-top: 8px;">Registered Student Scores:</h4>
+      <div id="studentLeaderboard" style="max-height: 100px; overflow-y: auto; border: 1px solid #ddd; padding: 6px; font-size: 11px; background: #fafafa;"></div>
 
       <div style="display:flex; justify-content:flex-end; margin-top: 12px;">
-        <button id="closeAdminBtn" style="padding:6px 12px; border:1px solid #ccc; background:white; border-radius:4px; cursor:pointer;">Close</button>
+        <button id="closeAdminBtn" style="padding:6px 12px; border:1px solid #ccc; background:white; border-radius:4px; cursor:pointer; font-size:12px;">Close</button>
       </div>
     </div>
   </div>
 
-  <!-- GENERATED RESULT CARD MODAL -->
+  <!-- RESULT CARD MODAL -->
   <div id="resultModal" class="modal-overlay hidden">
     <div class="modal-content" style="text-align: center;">
       <div class="result-card" id="printableCard">
@@ -173,7 +209,6 @@
     </div>
   </div>
 
-  <!-- FIREBASE MODULE SCRIPT -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
     import { getFirestore, collection, addDoc, doc, getDoc, setDoc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
@@ -210,7 +245,8 @@
     document.getElementById('btnSave').addEventListener('click', saveAndNext);
     document.getElementById('adminBtn').addEventListener('click', openAdminModal);
     document.getElementById('closeAdminBtn').addEventListener('click', closeAdminModal);
-    document.getElementById('saveQuestionsBtn').addEventListener('click', loadCustomQuestions);
+    document.getElementById('addSingleQBtn').addEventListener('click', addSingleQuestion);
+    document.getElementById('clearAllQBtn').addEventListener('click', clearAllQuestions);
     document.getElementById('printCardBtn').addEventListener('click', () => window.print());
 
     async function submitLogin() {
@@ -246,7 +282,7 @@
     async function startTestSession() {
       try {
         const docSnap = await getDoc(doc(db, "tests", "class7"));
-        if (docSnap.exists() && docSnap.data().questions) {
+        if (docSnap.exists() && docSnap.data().questions && docSnap.data().questions.length > 0) {
           questions = docSnap.data().questions;
           startTimer();
           renderQuestion();
@@ -375,8 +411,7 @@
         const studentAns = lockedAnswers[idx];
         const correctAns = Number(q.answer);
 
-        // Evaluates both 0-based and 1-based JSON answer formats
-        if (studentAns !== undefined && (studentAns === correctAns || studentAns + 1 === correctAns)) {
+        if (studentAns !== undefined && studentAns === correctAns) {
           score++;
         }
       });
@@ -402,6 +437,7 @@
       const password = prompt("Enter Admin Password:");
       if (password === "admin123") {
         document.getElementById('adminModal').classList.remove('hidden');
+        fetchCurrentCloudQuestions();
         loadStudentLeaderboard();
       } else {
         alert("Incorrect password.");
@@ -412,17 +448,57 @@
       document.getElementById('adminModal').classList.add('hidden'); 
     }
 
-    async function loadCustomQuestions() {
-      const text = document.getElementById('jsonInput').value;
-      try {
-        const parsed = JSON.parse(text);
-        if (Array.isArray(parsed)) {
-          await setDoc(doc(db, "tests", "class7"), { questions: parsed });
-          alert("Questions saved to cloud successfully!");
-          closeAdminModal();
-        }
-      } catch (e) {
-        alert("Invalid JSON format.");
+    async function fetchCurrentCloudQuestions() {
+      const docSnap = await getDoc(doc(db, "tests", "class7"));
+      if (docSnap.exists() && docSnap.data().questions) {
+        questions = docSnap.data().questions;
+      } else {
+        questions = [];
+      }
+      document.getElementById('cloudCount').innerText = questions.length;
+    }
+
+    async function addSingleQuestion() {
+      const subject = document.getElementById('formSubject').value;
+      const qText = document.getElementById('formQuestion').value.trim();
+      const o0 = document.getElementById('opt0').value.trim();
+      const o1 = document.getElementById('opt1').value.trim();
+      const o2 = document.getElementById('opt2').value.trim();
+      const o3 = document.getElementById('opt3').value.trim();
+      const correctVal = parseInt(document.querySelector('input[name="correctOpt"]:checked').value, 10);
+
+      if (!qText || !o0 || !o1 || !o2 || !o3) {
+        alert("Please fill in the question and all 4 options.");
+        return;
+      }
+
+      const newQ = {
+        subject: subject,
+        question: qText,
+        options: [o0, o1, o2, o3],
+        answer: correctVal
+      };
+
+      questions.push(newQ);
+      await setDoc(doc(db, "tests", "class7"), { questions: questions });
+
+      // Reset Form Input Fields
+      document.getElementById('formQuestion').value = '';
+      document.getElementById('opt0').value = '';
+      document.getElementById('opt1').value = '';
+      document.getElementById('opt2').value = '';
+      document.getElementById('opt3').value = '';
+      document.getElementById('cloudCount').innerText = questions.length;
+
+      alert(`Question #${questions.length} saved successfully!`);
+    }
+
+    async function clearAllQuestions() {
+      if (confirm("Are you sure you want to delete all current test questions from cloud?")) {
+        questions = [];
+        await setDoc(doc(db, "tests", "class7"), { questions: [] });
+        document.getElementById('cloudCount').innerText = 0;
+        alert("Question bank cleared.");
       }
     }
 
