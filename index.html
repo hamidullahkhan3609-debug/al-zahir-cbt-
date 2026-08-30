@@ -60,13 +60,20 @@
     .skip-num-btn { background: #ffedd5; color: #9a3412; border: 1px solid #fdba74; padding: 8px; border-radius: 4px; font-weight: bold; font-size: 12px; cursor: pointer; }
 
     /* PAGE 3: ADMIN DASHBOARD */
-    .admin-container { max-width: 800px; margin: 24px auto; width: 95%; background: white; padding: 24px; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .admin-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #00529B; padding-bottom: 12px; margin-bottom: 20px; }
+    .admin-container { max-width: 900px; margin: 24px auto; width: 95%; background: white; padding: 24px; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .admin-header { border-bottom: 2px solid #00529B; padding-bottom: 12px; margin-bottom: 20px; }
     .option-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
     .option-row input[type="text"] { flex: 1; margin: 0; }
 
     .input-field { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; margin-top: 4px; margin-bottom: 12px; font-size: 14px; }
     .btn-primary { width: 100%; background: #00529B; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
+
+    /* LEADERBOARD TABLE STYLES */
+    .table-wrapper { overflow-x: auto; margin-top: 12px; border: 1px solid #e5e7eb; border-radius: 6px; }
+    .leaderboard-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+    .leaderboard-table th { background: #00529B; color: white; padding: 10px 12px; font-weight: 600; }
+    .leaderboard-table td { padding: 10px 12px; border-bottom: 1px solid #e5e7eb; }
+    .leaderboard-table tr:nth-child(even) { background: #f9fafb; }
 
     /* PAGE 4: FULL-SCREEN RESULT VIEW */
     .result-full-page { max-width: 650px; margin: 40px auto; width: 90%; background: white; border: 2px solid #00529B; border-radius: 12px; padding: 32px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); text-align: center; }
@@ -79,13 +86,13 @@
     .modal-content { background: white; border-radius: 8px; padding: 24px; max-width: 480px; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
     .hidden { display: none !important; }
 
-    /* PRINT AND PDF GENERATION STYLING */
+    /* PRINT AND PDF STYLING */
     @media print {
-      header, .no-print { display: none !important; }
+      header, .no-print, .action-bar, .skipped-sidebar, .profile-sidebar { display: none !important; }
       body { background: white; }
       .page-view { display: none !important; }
-      #resultPage { display: block !important; }
-      .result-full-page { border: none; box-shadow: none; margin: 0; width: 100%; max-width: 100%; padding: 0; }
+      .printable-view { display: block !important; }
+      .result-full-page, .admin-container { border: none; box-shadow: none; margin: 0; width: 100%; max-width: 100%; padding: 0; }
     }
 
     @media (max-width: 768px) {
@@ -99,7 +106,7 @@
 <body>
 
   <!-- HEADER -->
-  <header>
+  <header class="no-print">
     <div class="logo-container">
       <div class="logo-badge">AZ</div>
       <div>
@@ -143,7 +150,7 @@
 
     <div class="stats-bar">
       <div>Elapsed: <span id="elapsedTime">00:00</span></div>
-      <div>Remaining: <span id="remainingTime">30:00</span></div>
+      <div>Remaining: <span id="remainingTime" style="color:#dc2626; font-weight:bold;">30:00</span></div>
       <div class="progress-box">
         <span>Completed:</span>
         <div class="progress-bar-bg">
@@ -186,64 +193,97 @@
   </div>
 
   <!-- PAGE 3: ADMIN MANAGEMENT DASHBOARD -->
-  <div id="adminPage" class="page-view">
+  <div id="adminPage" class="page-view printable-view">
     <div class="admin-container">
       <div class="admin-header">
-        <div>
-          <h2 style="color:#00529B;">Admin Dashboard</h2>
-          <p style="font-size: 12px; color: #6b7280;">Manage question bank & student scores</p>
+        <h2 style="color:#00529B;">Admin Dashboard</h2>
+        <p style="font-size: 12px; color: #6b7280;">Manage test configuration, questions & student scores</p>
+      </div>
+
+      <!-- TIMER CONFIGURATION SETTING -->
+      <div class="no-print" style="background:#f0f7ff; padding:12px; border-radius:6px; border:1px solid #bae6fd; margin-bottom:16px;">
+        <label class="field-label" style="color:#0369a1;">Set Test Duration (Minutes)</label>
+        <div style="display:flex; gap:10px; margin-top:4px;">
+          <input type="number" id="testDurationInput" class="input-field" value="30" min="1" max="180" style="margin:0; max-width:150px;">
+          <button id="saveDurationBtn" style="background:#00529B; color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:12px;">Update Duration</button>
         </div>
       </div>
 
-      <h3 style="font-size: 14px; margin-bottom: 12px; color: #1f2937;">Add Question</h3>
+      <h3 class="no-print" style="font-size: 14px; margin-bottom: 12px; color: #1f2937;">Add Question</h3>
       
-      <label class="field-label">Subject</label>
-      <select id="formSubject" class="input-field">
-        <option value="Mathematics">Mathematics</option>
-        <option value="General Science">General Science</option>
-        <option value="English">English</option>
-        <option value="Urdu">Urdu</option>
-        <option value="Islamiat">Islamiat</option>
-      </select>
+      <div class="no-print">
+        <label class="field-label">Subject</label>
+        <select id="formSubject" class="input-field">
+          <option value="Mathematics">Mathematics</option>
+          <option value="General Science">General Science</option>
+          <option value="English">English</option>
+          <option value="Urdu">Urdu</option>
+          <option value="Islamiat">Islamiat</option>
+        </select>
 
-      <label class="field-label">Question Text</label>
-      <input type="text" id="formQuestion" class="input-field" placeholder="Enter question statement...">
+        <label class="field-label">Question Text</label>
+        <input type="text" id="formQuestion" class="input-field" placeholder="Enter question statement...">
 
-      <label class="field-label" style="margin-top: 6px;">Options (Select radio for correct answer)</label>
-      
-      <div class="option-row">
-        <input type="radio" name="correctOpt" value="0" checked>
-        <input type="text" id="opt0" class="input-field" placeholder="Option A">
-      </div>
-      <div class="option-row">
-        <input type="radio" name="correctOpt" value="1">
-        <input type="text" id="opt1" class="input-field" placeholder="Option B">
-      </div>
-      <div class="option-row">
-        <input type="radio" name="correctOpt" value="2">
-        <input type="text" id="opt2" class="input-field" placeholder="Option C">
-      </div>
-      <div class="option-row">
-        <input type="radio" name="correctOpt" value="3">
-        <input type="text" id="opt3" class="input-field" placeholder="Option D">
+        <label class="field-label" style="margin-top: 6px;">Options (Select radio for correct answer)</label>
+        
+        <div class="option-row">
+          <input type="radio" name="correctOpt" value="0" checked>
+          <input type="text" id="opt0" class="input-field" placeholder="Option A">
+        </div>
+        <div class="option-row">
+          <input type="radio" name="correctOpt" value="1">
+          <input type="text" id="opt1" class="input-field" placeholder="Option B">
+        </div>
+        <div class="option-row">
+          <input type="radio" name="correctOpt" value="2">
+          <input type="text" id="opt2" class="input-field" placeholder="Option C">
+        </div>
+        <div class="option-row">
+          <input type="radio" name="correctOpt" value="3">
+          <input type="text" id="opt3" class="input-field" placeholder="Option D">
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:10px;">
+          <button id="addSingleQBtn" style="flex:1; background:#16a34a; color:white; border:none; padding:10px; border-radius:6px; font-weight:bold; cursor:pointer;">Save Question to Cloud</button>
+          <button id="clearAllQBtn" style="background:#dc2626; color:white; border:none; padding:10px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">Clear Question Bank</button>
+        </div>
+
+        <hr style="margin: 20px 0;">
+        <h4 style="font-size: 13px; margin-bottom: 12px;">Saved Questions Count: <span id="cloudCount" style="color:#00529B;">0</span></h4>
       </div>
 
-      <div style="display:flex; gap:10px; margin-top:10px;">
-        <button id="addSingleQBtn" style="flex:1; background:#16a34a; color:white; border:none; padding:10px; border-radius:6px; font-weight:bold; cursor:pointer;">Save Question to Cloud</button>
-        <button id="clearAllQBtn" style="background:#dc2626; color:white; border:none; padding:10px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">Clear Question Bank</button>
+      <!-- LEADERBOARD TABLE SECTION -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 16px; margin-bottom: 8px;">
+        <h4 style="font-size: 14px; color:#00529B;">Student Marks Leaderboard</h4>
+        <div class="no-print" style="display:flex; gap:8px;">
+          <button id="downloadLeaderboardPdfBtn" style="background:#16a34a; color:white; border:none; padding:6px 12px; border-radius:4px; font-size:12px; font-weight:bold; cursor:pointer;">Download PDF</button>
+          <button id="clearLeaderboardBtn" style="background:#dc2626; color:white; border:none; padding:6px 12px; border-radius:4px; font-size:12px; font-weight:bold; cursor:pointer;">Clear Leaderboard</button>
+        </div>
       </div>
 
-      <hr style="margin: 20px 0;">
-
-      <h4 style="font-size: 13px; margin-bottom: 8px;">Saved Questions Count: <span id="cloudCount" style="color:#00529B;">0</span></h4>
-      
-      <h4 style="font-size: 13px; margin-top: 16px; margin-bottom: 8px;">Student Leaderboard</h4>
-      <div id="studentLeaderboard" style="max-height: 180px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; font-size: 12px; background: #fafafa; border-radius: 6px;"></div>
+      <div class="table-wrapper">
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Student Name</th>
+              <th>Father Name</th>
+              <th>Marks Obtained</th>
+              <th>Percentage</th>
+            </tr>
+          </thead>
+          <tbody id="studentLeaderboardBody">
+            <tr>
+              <td colspan="5" style="text-align:center; color:#6b7280;">Loading student records...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
   <!-- PAGE 4: FULL SCREEN RESULT PAGE -->
-  <div id="resultPage" class="page-view">
+  <div id="resultPage" class="page-view printable-view">
     <div class="result-full-page">
       <div class="result-header">
         <img src="logo.png" alt="Logo" style="width: 100px; height: auto; margin-bottom: 8px;" onerror="this.style.display='none'">
@@ -268,7 +308,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, doc, getDoc, setDoc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, doc, getDoc, setDoc, updateDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyD2OYE6tVb4mukv0ZdZe5kjFL0d2gMdi6Y",
@@ -290,9 +330,10 @@
     let lockedAnswers = {};
     let skippedList = [];
     let elapsedSeconds = 0;
+    let allowedDurationSeconds = 1800; // Default 30 minutes
     let timerInterval = null;
 
-    // Page Elements
+    // View Switching Logic
     const welcomePage = document.getElementById('welcomePage');
     const studentPage = document.getElementById('studentPage');
     const adminPage = document.getElementById('adminPage');
@@ -330,12 +371,15 @@
       }
     }
 
-    // Student Examination System
+    // Student Examination Logic
     document.getElementById('submitLoginBtn').addEventListener('click', submitLogin);
     document.getElementById('btnSkip').addEventListener('click', skipQuestion);
     document.getElementById('btnSave').addEventListener('click', saveAndNext);
     document.getElementById('addSingleQBtn').addEventListener('click', addSingleQuestion);
     document.getElementById('clearAllQBtn').addEventListener('click', clearAllQuestions);
+    document.getElementById('saveDurationBtn').addEventListener('click', saveTestDuration);
+    document.getElementById('clearLeaderboardBtn').addEventListener('click', clearStudentLeaderboard);
+    document.getElementById('downloadLeaderboardPdfBtn').addEventListener('click', () => window.print());
     document.getElementById('downloadPdfBtn').addEventListener('click', () => window.print());
 
     async function submitLogin() {
@@ -373,6 +417,11 @@
         const docSnap = await getDoc(doc(db, "tests", "class7"));
         if (docSnap.exists() && docSnap.data().questions && docSnap.data().questions.length > 0) {
           questions = docSnap.data().questions;
+          
+          if (docSnap.data().durationMinutes) {
+            allowedDurationSeconds = docSnap.data().durationMinutes * 60;
+          }
+
           startTimer();
           renderQuestion();
         } else {
@@ -386,8 +435,22 @@
     function startTimer() {
       timerInterval = setInterval(() => {
         elapsedSeconds++;
-        let mins = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
-        document.getElementById('elapsedTime').innerText = `${mins}:${secs}`;
+        const remaining = allowedDurationSeconds - elapsedSeconds;
+
+        if (remaining <= 0) {
+          clearInterval(timerInterval);
+          alert("Time is up! Your examination is auto-submitting now.");
+          finishTest();
+          return;
+        }
+
+        let elapsedMins = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
+        let elapsedSecs = String(elapsedSeconds % 60).padStart(2, '0');
+        document.getElementById('elapsedTime').innerText = `${elapsedMins}:${elapsedSecs}`;
+
+        let remMins = String(Math.floor(remaining / 60)).padStart(2, '0');
+        let remSecs = String(remaining % 60).padStart(2, '0');
+        document.getElementById('remainingTime').innerText = `${remMins}:${remSecs}`;
       }, 1000);
     }
 
@@ -514,7 +577,6 @@
         });
       }
 
-      // Display Full Page Result
       document.getElementById('resName').innerText = studentName;
       document.getElementById('resFather').innerText = studentFather;
       document.getElementById('finalScore').innerText = `${score} / ${questions.length}`;
@@ -527,12 +589,26 @@
     // Admin Dashboard Operations
     async function fetchCurrentCloudQuestions() {
       const docSnap = await getDoc(doc(db, "tests", "class7"));
-      if (docSnap.exists() && docSnap.data().questions) {
-        questions = docSnap.data().questions;
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        questions = data.questions || [];
+        if (data.durationMinutes) {
+          document.getElementById('testDurationInput').value = data.durationMinutes;
+        }
       } else {
         questions = [];
       }
       document.getElementById('cloudCount').innerText = questions.length;
+    }
+
+    async function saveTestDuration() {
+      const mins = parseInt(document.getElementById('testDurationInput').value, 10);
+      if (isNaN(mins) || mins < 1) {
+        alert("Please enter a valid duration in minutes.");
+        return;
+      }
+      await setDoc(doc(db, "tests", "class7"), { durationMinutes: mins }, { merge: true });
+      alert(`Test timer set to ${mins} minutes successfully!`);
     }
 
     async function addSingleQuestion() {
@@ -557,7 +633,7 @@
       };
 
       questions.push(newQ);
-      await setDoc(doc(db, "tests", "class7"), { questions: questions });
+      await setDoc(doc(db, "tests", "class7"), { questions: questions }, { merge: true });
 
       document.getElementById('formQuestion').value = '';
       document.getElementById('opt0').value = '';
@@ -570,30 +646,58 @@
     }
 
     async function clearAllQuestions() {
-      if (confirm("Are you sure you want to delete all current test questions from the cloud database?")) {
+      if (confirm("Are you sure you want to delete all test questions from the cloud database?")) {
         questions = [];
-        await setDoc(doc(db, "tests", "class7"), { questions: [] });
+        await setDoc(doc(db, "tests", "class7"), { questions: [] }, { merge: true });
         document.getElementById('cloudCount').innerText = 0;
         alert("Question bank cleared successfully.");
       }
     }
 
     async function loadStudentLeaderboard() {
-      const board = document.getElementById('studentLeaderboard');
-      board.innerHTML = 'Loading records...';
+      const tbody = document.getElementById('studentLeaderboardBody');
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading...</td></tr>';
+      
       try {
         const querySnapshot = await getDocs(collection(db, "students"));
-        board.innerHTML = '';
+        tbody.innerHTML = '';
+
+        if (querySnapshot.empty) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#6b7280;">No student records found.</td></tr>';
+          return;
+        }
+
+        let index = 1;
         querySnapshot.forEach((docSnap) => {
           const data = docSnap.data();
-          const div = document.createElement('div');
-          div.style.padding = "6px 0";
-          div.style.borderBottom = "1px solid #eee";
-          div.innerHTML = `<strong>${data.name}</strong> (S/O ${data.fatherName}) — Score: <strong style="color:#00529B;">${data.score}</strong> (${data.percentage})`;
-          board.appendChild(div);
+          const tr = document.createElement('tr');
+
+          tr.innerHTML = `
+            <td>${index++}</td>
+            <td><strong>${data.name || '--'}</strong></td>
+            <td>${data.fatherName || '--'}</td>
+            <td><strong style="color:#00529B;">${data.score || 'Pending'}</strong></td>
+            <td><span style="color:#16a34a; font-weight:bold;">${data.percentage || 'Pending'}</span></td>
+          `;
+          tbody.appendChild(tr);
         });
       } catch (e) {
-        board.innerHTML = 'Failed to fetch student data.';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#dc2626;">Failed to fetch student records.</td></tr>';
+      }
+    }
+
+    async function clearStudentLeaderboard() {
+      if (confirm("Are you sure you want to delete all student records from the leaderboard?")) {
+        try {
+          const querySnapshot = await getDocs(collection(db, "students"));
+          for (const studentDoc of querySnapshot.docs) {
+            await deleteDoc(doc(db, "students", studentDoc.id));
+          }
+          alert("Leaderboard cleared successfully!");
+          loadStudentLeaderboard();
+        } catch (e) {
+          alert("Error clearing leaderboard: " + e.message);
+        }
       }
     }
   </script>
