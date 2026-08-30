@@ -48,13 +48,13 @@
     .input-field { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-top: 2px; margin-bottom: 8px; font-size: 13px; }
     .btn-primary { width: 100%; background: #00529B; color: white; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer; }
 
-    /* Result Card Styling */
     .result-card { border: 2px solid #00529B; border-radius: 8px; padding: 20px; background: #fafafa; text-align: left; }
     .result-header { border-bottom: 2px solid #00529B; padding-bottom: 10px; margin-bottom: 12px; text-align: center; }
 
-    /* Admin Form Layout */
     .option-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
     .option-row input[type="text"] { flex: 1; margin: 0; }
+
+    .admin-link-btn { background: transparent; border: none; color: #6b7280; font-size: 11px; text-decoration: underline; cursor: pointer; margin-top: 12px; width: 100%; text-align: center; }
 
     @media (max-width: 768px) {
       body { height: auto; overflow: auto; }
@@ -80,6 +80,9 @@
       <input type="text" id="inputFather" class="input-field" placeholder="Enter father's name">
 
       <button id="submitLoginBtn" class="btn-primary">Start Test</button>
+      
+      <!-- DIRECT ADMIN ACCESS BUTTON -->
+      <button id="directAdminLoginBtn" class="admin-link-btn">Admin Panel Access</button>
     </div>
   </div>
 
@@ -91,7 +94,7 @@
         <div style="font-size: 10px; opacity: 0.8;">Computer Based Testing System</div>
       </div>
     </div>
-    <button id="adminBtn" class="load-btn hidden">Admin Panel</button>
+    <button id="adminBtn" class="load-btn">Admin Panel</button>
   </header>
 
   <div class="stats-bar">
@@ -235,12 +238,8 @@
     let elapsedSeconds = 0;
     let timerInterval = null;
 
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('admin') === 'true') {
-      document.getElementById('adminBtn').classList.remove('hidden');
-    }
-
     document.getElementById('submitLoginBtn').addEventListener('click', submitLogin);
+    document.getElementById('directAdminLoginBtn').addEventListener('click', openAdminModal);
     document.getElementById('btnSkip').addEventListener('click', skipQuestion);
     document.getElementById('btnSave').addEventListener('click', saveAndNext);
     document.getElementById('adminBtn').addEventListener('click', openAdminModal);
@@ -482,7 +481,6 @@
       questions.push(newQ);
       await setDoc(doc(db, "tests", "class7"), { questions: questions });
 
-      // Reset Form Input Fields
       document.getElementById('formQuestion').value = '';
       document.getElementById('opt0').value = '';
       document.getElementById('opt1').value = '';
