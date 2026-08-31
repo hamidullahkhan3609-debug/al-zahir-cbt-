@@ -81,18 +81,23 @@
     .score-display { font-size: 52px; font-weight: bold; color: #00529B; margin: 16px 0 4px; }
     .percent-display { color: #16a34a; font-size: 22px; font-weight: bold; margin-bottom: 24px; }
 
-    /* MODAL OVERLAY (FOR STUDENT LOGIN) */
+    /* MODAL OVERLAY */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 100; }
     .modal-content { background: white; border-radius: 8px; padding: 24px; max-width: 480px; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
     .hidden { display: none !important; }
 
-    /* PRINT AND PDF STYLING */
+    /* STRICT ISOLATED PRINT STYLING */
     @media print {
       header, .no-print, .action-bar, .skipped-sidebar, .profile-sidebar { display: none !important; }
       body { background: white; }
+      
+      /* Hide all pages by default during print */
       .page-view { display: none !important; }
-      .printable-view { display: block !important; }
-      .result-full-page, .admin-container { border: none; box-shadow: none; margin: 0; width: 100%; max-width: 100%; padding: 0; }
+
+      /* Only print active page */
+      .page-view.active { display: block !important; }
+
+      .result-full-page, .admin-container { border: none !important; box-shadow: none !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; padding: 0 !important; }
     }
 
     @media (max-width: 768px) {
@@ -193,7 +198,7 @@
   </div>
 
   <!-- PAGE 3: ADMIN MANAGEMENT DASHBOARD -->
-  <div id="adminPage" class="page-view printable-view">
+  <div id="adminPage" class="page-view">
     <div class="admin-container">
       <div class="admin-header">
         <h2 style="color:#00529B;">Admin Dashboard</h2>
@@ -283,7 +288,7 @@
   </div>
 
   <!-- PAGE 4: FULL SCREEN RESULT PAGE -->
-  <div id="resultPage" class="page-view printable-view">
+  <div id="resultPage" class="page-view">
     <div class="result-full-page">
       <div class="result-header">
         <img src="logo.png" alt="Logo" style="width: 100px; height: auto; margin-bottom: 8px;" onerror="this.style.display='none'">
@@ -330,7 +335,7 @@
     let lockedAnswers = {};
     let skippedList = [];
     let elapsedSeconds = 0;
-    let allowedDurationSeconds = 1800; // Default 30 minutes
+    let allowedDurationSeconds = 1800;
     let timerInterval = null;
 
     // View Switching Logic
