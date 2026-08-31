@@ -6,6 +6,18 @@
   <title>AL-ZAHIR ETEA COACHING & SCIENCE TUITION ACADEMY</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
   
+  <!-- MATHJAX FOR MATHEMATICAL FORMULAS, FRACTIONS & SQUARE ROOTS -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
     body { background-color: #f3f4f6; min-height: 100vh; display: flex; flex-direction: column; }
@@ -33,6 +45,8 @@
     .btn-admin:hover { background: #d97706; }
 
     /* PAGE 2: STUDENT EXAM SCREEN */
+    .no-select { -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+    
     .stats-bar { background: white; padding: 10px 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #1d4ed8; font-weight: 600; }
     .progress-box { display: flex; align-items: center; gap: 8px; color: #374151; }
     .progress-bar-bg { width: 100px; background: #e5e7eb; height: 10px; border-radius: 10px; overflow: hidden; }
@@ -47,7 +61,9 @@
     .card-header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 16px; font-size: 13px; font-weight: bold; color: #4b5563; }
     .subject-tag { background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 4px; font-size: 11px; }
 
-    .q-title { font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 20px; min-height: 45px; }
+    .q-title { font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 16px; min-height: 40px; }
+    .q-img { max-width: 100%; height: auto; border-radius: 6px; margin-bottom: 16px; border: 1px solid #e5e7eb; }
+    
     .option-item { display: flex; align-items: center; border: 1px solid #e5e7eb; padding: 12px; border-radius: 6px; margin-bottom: 10px; cursor: pointer; font-size: 14px; }
     .option-item input { margin-right: 12px; }
 
@@ -60,7 +76,7 @@
     .skip-num-btn { background: #ffedd5; color: #9a3412; border: 1px solid #fdba74; padding: 8px; border-radius: 4px; font-weight: bold; font-size: 12px; cursor: pointer; }
 
     /* PAGE 3: ADMIN DASHBOARD */
-    .admin-container { max-width: 900px; margin: 24px auto; width: 95%; background: white; padding: 24px; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .admin-container { max-width: 950px; margin: 24px auto; width: 95%; background: white; padding: 24px; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
     .admin-header { border-bottom: 2px solid #00529B; padding-bottom: 12px; margin-bottom: 20px; }
     .option-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
     .option-row input[type="text"] { flex: 1; margin: 0; }
@@ -68,12 +84,15 @@
     .input-field { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; margin-top: 4px; margin-bottom: 12px; font-size: 14px; }
     .btn-primary { width: 100%; background: #00529B; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
 
-    /* LEADERBOARD TABLE STYLES */
+    /* TABLES FOR LEADERBOARD & QUESTION BANK */
     .table-wrapper { overflow-x: auto; margin-top: 12px; border: 1px solid #e5e7eb; border-radius: 6px; }
-    .leaderboard-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
-    .leaderboard-table th { background: #00529B; color: white; padding: 10px 12px; font-weight: 600; }
-    .leaderboard-table td { padding: 10px 12px; border-bottom: 1px solid #e5e7eb; }
-    .leaderboard-table tr:nth-child(even) { background: #f9fafb; }
+    .custom-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+    .custom-table th { background: #00529B; color: white; padding: 10px 12px; font-weight: 600; }
+    .custom-table td { padding: 10px 12px; border-bottom: 1px solid #e5e7eb; }
+    .custom-table tr:nth-child(even) { background: #f9fafb; }
+
+    .btn-edit { background: #f59e0b; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-right: 4px; }
+    .btn-delete { background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; }
 
     /* PAGE 4: FULL-SCREEN RESULT VIEW */
     .result-full-page { max-width: 650px; margin: 40px auto; width: 90%; background: white; border: 2px solid #00529B; border-radius: 12px; padding: 32px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); text-align: center; }
@@ -90,13 +109,8 @@
     @media print {
       header, .no-print, .action-bar, .skipped-sidebar, .profile-sidebar { display: none !important; }
       body { background: white; }
-      
-      /* Hide all pages by default during print */
       .page-view { display: none !important; }
-
-      /* Only print active page */
       .page-view.active { display: block !important; }
-
       .result-full-page, .admin-container { border: none !important; box-shadow: none !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; padding: 0 !important; }
     }
 
@@ -134,8 +148,8 @@
     </div>
   </div>
 
-  <!-- PAGE 2: STUDENT EXAMINATION VIEW -->
-  <div id="studentPage" class="page-view">
+  <!-- PAGE 2: STUDENT EXAMINATION VIEW (PROTECTED FROM COPY/PASTE) -->
+  <div id="studentPage" class="page-view no-select">
     
     <!-- STUDENT LOGIN MODAL -->
     <div id="loginModal" class="modal-overlay">
@@ -181,6 +195,7 @@
           </div>
           
           <div id="questionText" class="q-title">Please wait for test questions to load...</div>
+          <img id="questionImage" class="q-img hidden" src="" alt="Question Diagram">
           <div id="optionsContainer"></div>
         </div>
 
@@ -198,14 +213,14 @@
   </div>
 
   <!-- PAGE 3: ADMIN MANAGEMENT DASHBOARD -->
-  <div id="adminPage" class="page-view">
+  <div id="adminPage" class="page-view printable-view">
     <div class="admin-container">
       <div class="admin-header">
         <h2 style="color:#00529B;">Admin Dashboard</h2>
-        <p style="font-size: 12px; color: #6b7280;">Manage test configuration, questions & student scores</p>
+        <p style="font-size: 12px; color: #6b7280;">Manage test configuration, question bank & student scores</p>
       </div>
 
-      <!-- TIMER CONFIGURATION SETTING -->
+      <!-- TIMER CONFIGURATION -->
       <div class="no-print" style="background:#f0f7ff; padding:12px; border-radius:6px; border:1px solid #bae6fd; margin-bottom:16px;">
         <label class="field-label" style="color:#0369a1;">Set Test Duration (Minutes)</label>
         <div style="display:flex; gap:10px; margin-top:4px;">
@@ -214,20 +229,25 @@
         </div>
       </div>
 
-      <h3 class="no-print" style="font-size: 14px; margin-bottom: 12px; color: #1f2937;">Add Question</h3>
+      <h3 class="no-print" id="formHeaderTitle" style="font-size: 14px; margin-bottom: 12px; color: #1f2937;">Add / Edit Question</h3>
       
       <div class="no-print">
         <label class="field-label">Subject</label>
         <select id="formSubject" class="input-field">
           <option value="Mathematics">Mathematics</option>
+          <option value="Physics">Physics</option>
+          <option value="Chemistry">Chemistry</option>
           <option value="General Science">General Science</option>
           <option value="English">English</option>
           <option value="Urdu">Urdu</option>
           <option value="Islamiat">Islamiat</option>
         </select>
 
-        <label class="field-label">Question Text</label>
+        <label class="field-label">Question Text (Use LaTeX like $$\sqrt{x}$$ or $$\frac{a}{b}$$ for math formulas)</label>
         <input type="text" id="formQuestion" class="input-field" placeholder="Enter question statement...">
+
+        <label class="field-label">Image URL (Optional)</label>
+        <input type="text" id="formImageUrl" class="input-field" placeholder="https://example.com/diagram.png">
 
         <label class="field-label" style="margin-top: 6px;">Options (Select radio for correct answer)</label>
         
@@ -250,11 +270,32 @@
 
         <div style="display:flex; gap:10px; margin-top:10px;">
           <button id="addSingleQBtn" style="flex:1; background:#16a34a; color:white; border:none; padding:10px; border-radius:6px; font-weight:bold; cursor:pointer;">Save Question to Cloud</button>
-          <button id="clearAllQBtn" style="background:#dc2626; color:white; border:none; padding:10px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">Clear Question Bank</button>
+          <button id="cancelEditBtn" class="hidden" style="background:#6b7280; color:white; border:none; padding:10px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">Cancel Edit</button>
+          <button id="clearAllQBtn" style="background:#dc2626; color:white; border:none; padding:10px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">Clear All Questions</button>
         </div>
 
         <hr style="margin: 20px 0;">
-        <h4 style="font-size: 13px; margin-bottom: 12px;">Saved Questions Count: <span id="cloudCount" style="color:#00529B;">0</span></h4>
+      </div>
+
+      <!-- QUESTION BANK TABLE -->
+      <div class="no-print" style="margin-bottom: 24px;">
+        <h4 style="font-size: 14px; color:#00529B; margin-bottom: 8px;">Uploaded Question Bank (<span id="cloudCount">0</span> Questions)</h4>
+        <div class="table-wrapper">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Subject</th>
+                <th>Question</th>
+                <th>Options</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="questionBankTableBody">
+              <tr><td colspan="5" style="text-align:center; color:#6b7280;">Loading question bank...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <!-- LEADERBOARD TABLE SECTION -->
@@ -267,7 +308,7 @@
       </div>
 
       <div class="table-wrapper">
-        <table class="leaderboard-table">
+        <table class="custom-table">
           <thead>
             <tr>
               <th>#</th>
@@ -278,9 +319,7 @@
             </tr>
           </thead>
           <tbody id="studentLeaderboardBody">
-            <tr>
-              <td colspan="5" style="text-align:center; color:#6b7280;">Loading student records...</td>
-            </tr>
+            <tr><td colspan="5" style="text-align:center; color:#6b7280;">Loading student records...</td></tr>
           </tbody>
         </table>
       </div>
@@ -288,7 +327,7 @@
   </div>
 
   <!-- PAGE 4: FULL SCREEN RESULT PAGE -->
-  <div id="resultPage" class="page-view">
+  <div id="resultPage" class="page-view printable-view">
     <div class="result-full-page">
       <div class="result-header">
         <img src="logo.png" alt="Logo" style="width: 100px; height: auto; margin-bottom: 8px;" onerror="this.style.display='none'">
@@ -337,8 +376,10 @@
     let elapsedSeconds = 0;
     let allowedDurationSeconds = 1800;
     let timerInterval = null;
+    let tabSwitchCount = 0;
+    let editingQuestionIndex = null;
 
-    // View Switching Logic
+    // Navigation Controls
     const welcomePage = document.getElementById('welcomePage');
     const studentPage = document.getElementById('studentPage');
     const adminPage = document.getElementById('adminPage');
@@ -376,11 +417,34 @@
       }
     }
 
+    // DISABLING COPY, PASTE & RIGHT CLICK FOR EXAM SECURITY
+    document.getElementById('studentPage').addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+      if (studentPage.classList.contains('active')) {
+        if (e.ctrlKey && (e.key === 'c' || e.key === 'u' || e.key === 's')) e.preventDefault();
+      }
+    });
+
+    // TAB SWITCHING WARNING SYSTEM
+    document.addEventListener('visibilitychange', () => {
+      if (studentPage.classList.contains('active') && !loginModal.classList.contains('hidden')) return;
+      if (studentPage.classList.contains('active')) {
+        tabSwitchCount++;
+        if (tabSwitchCount === 1) {
+          alert("WARNING: Tab switching is strictly prohibited during the exam! Your next attempt will auto-submit your test.");
+        } else if (tabSwitchCount >= 2) {
+          alert("VIOLATION: Multiple tab switches detected. Your test is auto-submitting now.");
+          finishTest();
+        }
+      }
+    });
+
     // Student Examination Logic
     document.getElementById('submitLoginBtn').addEventListener('click', submitLogin);
     document.getElementById('btnSkip').addEventListener('click', skipQuestion);
     document.getElementById('btnSave').addEventListener('click', saveAndNext);
     document.getElementById('addSingleQBtn').addEventListener('click', addSingleQuestion);
+    document.getElementById('cancelEditBtn').addEventListener('click', resetQuestionForm);
     document.getElementById('clearAllQBtn').addEventListener('click', clearAllQuestions);
     document.getElementById('saveDurationBtn').addEventListener('click', saveTestDuration);
     document.getElementById('clearLeaderboardBtn').addEventListener('click', clearStudentLeaderboard);
@@ -422,11 +486,9 @@
         const docSnap = await getDoc(doc(db, "tests", "class7"));
         if (docSnap.exists() && docSnap.data().questions && docSnap.data().questions.length > 0) {
           questions = docSnap.data().questions;
-          
           if (docSnap.data().durationMinutes) {
             allowedDurationSeconds = docSnap.data().durationMinutes * 60;
           }
-
           startTimer();
           renderQuestion();
         } else {
@@ -475,6 +537,14 @@
         qTextEl.classList.remove('urdu-text');
       }
 
+      const imgEl = document.getElementById('questionImage');
+      if (q.imageUrl && q.imageUrl.trim() !== '') {
+        imgEl.src = q.imageUrl;
+        imgEl.classList.remove('hidden');
+      } else {
+        imgEl.classList.add('hidden');
+      }
+
       const container = document.getElementById('optionsContainer');
       container.innerHTML = '';
 
@@ -501,6 +571,11 @@
       });
 
       updateProgressBar();
+
+      // Trigger MathJax render for formulas
+      if (window.MathJax && window.MathJax.typesetPromise) {
+        window.MathJax.typesetPromise();
+      }
     }
 
     function saveAndNext() {
@@ -604,6 +679,77 @@
         questions = [];
       }
       document.getElementById('cloudCount').innerText = questions.length;
+      renderQuestionBankTable();
+    }
+
+    function renderQuestionBankTable() {
+      const tbody = document.getElementById('questionBankTableBody');
+      tbody.innerHTML = '';
+
+      if (questions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#6b7280;">No questions in database.</td></tr>';
+        return;
+      }
+
+      questions.forEach((q, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td><span class="subject-tag">${q.subject || 'General'}</span></td>
+          <td>${q.question} ${q.imageUrl ? '<br><small style="color:#00529B;">[Has Image]</small>' : ''}</td>
+          <td><small>A: ${q.options[0]}<br>B: ${q.options[1]}<br>C: ${q.options[2]}<br>D: ${q.options[3]}</small></td>
+          <td>
+            <button class="btn-edit" onclick="editQuestion(${idx})">Edit</button>
+            <button class="btn-delete" onclick="deleteQuestion(${idx})">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      if (window.MathJax && window.MathJax.typesetPromise) {
+        window.MathJax.typesetPromise();
+      }
+    }
+
+    window.editQuestion = function(idx) {
+      editingQuestionIndex = idx;
+      const q = questions[idx];
+      document.getElementById('formSubject').value = q.subject || 'Mathematics';
+      document.getElementById('formQuestion').value = q.question;
+      document.getElementById('formImageUrl').value = q.imageUrl || '';
+      document.getElementById('opt0').value = q.options[0];
+      document.getElementById('opt1').value = q.options[1];
+      document.getElementById('opt2').value = q.options[2];
+      document.getElementById('opt3').value = q.options[3];
+
+      const radios = document.getElementsByName('correctOpt');
+      radios[q.answer].checked = true;
+
+      document.getElementById('formHeaderTitle').innerText = `Edit Question #${idx + 1}`;
+      document.getElementById('addSingleQBtn').innerText = "Update Question";
+      document.getElementById('cancelEditBtn').classList.remove('hidden');
+    };
+
+    window.deleteQuestion = async function(idx) {
+      if (confirm(`Delete Question #${idx + 1}?`)) {
+        questions.splice(idx, 1);
+        await setDoc(doc(db, "tests", "class7"), { questions: questions }, { merge: true });
+        document.getElementById('cloudCount').innerText = questions.length;
+        renderQuestionBankTable();
+      }
+    };
+
+    function resetQuestionForm() {
+      editingQuestionIndex = null;
+      document.getElementById('formQuestion').value = '';
+      document.getElementById('formImageUrl').value = '';
+      document.getElementById('opt0').value = '';
+      document.getElementById('opt1').value = '';
+      document.getElementById('opt2').value = '';
+      document.getElementById('opt3').value = '';
+      document.getElementById('formHeaderTitle').innerText = "Add New Question";
+      document.getElementById('addSingleQBtn').innerText = "Save Question to Cloud";
+      document.getElementById('cancelEditBtn').classList.add('hidden');
     }
 
     async function saveTestDuration() {
@@ -619,6 +765,7 @@
     async function addSingleQuestion() {
       const subject = document.getElementById('formSubject').value;
       const qText = document.getElementById('formQuestion').value.trim();
+      const imgUrl = document.getElementById('formImageUrl').value.trim();
       const o0 = document.getElementById('opt0').value.trim();
       const o1 = document.getElementById('opt1').value.trim();
       const o2 = document.getElementById('opt2').value.trim();
@@ -633,21 +780,24 @@
       const newQ = {
         subject: subject,
         question: qText,
+        imageUrl: imgUrl,
         options: [o0, o1, o2, o3],
         answer: correctVal
       };
 
-      questions.push(newQ);
+      if (editingQuestionIndex !== null) {
+        questions[editingQuestionIndex] = newQ;
+      } else {
+        questions.push(newQ);
+      }
+
       await setDoc(doc(db, "tests", "class7"), { questions: questions }, { merge: true });
 
-      document.getElementById('formQuestion').value = '';
-      document.getElementById('opt0').value = '';
-      document.getElementById('opt1').value = '';
-      document.getElementById('opt2').value = '';
-      document.getElementById('opt3').value = '';
+      resetQuestionForm();
       document.getElementById('cloudCount').innerText = questions.length;
+      renderQuestionBankTable();
 
-      alert(`Question #${questions.length} saved successfully!`);
+      alert("Question bank updated successfully!");
     }
 
     async function clearAllQuestions() {
@@ -655,6 +805,7 @@
         questions = [];
         await setDoc(doc(db, "tests", "class7"), { questions: [] }, { merge: true });
         document.getElementById('cloudCount').innerText = 0;
+        renderQuestionBankTable();
         alert("Question bank cleared successfully.");
       }
     }
