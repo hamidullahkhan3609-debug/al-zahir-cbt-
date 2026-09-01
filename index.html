@@ -1083,41 +1083,75 @@
       }
     }
 
-    async function loadStudentLeaderboard() {
+        async function loadStudentLeaderboard() {
       const tbody = document.getElementById('studentLeaderboardBody');
       tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading...</td></tr>';
       
       try {
-        const querySnapshot = await getDocs(collection(db, "students"));
-        tbody.innerHTML = '';
-
-        if (querySnapshot.empty) {
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#6b7280;">No student records found.</td></tr>';
+        // 1. Fetch all pre-registered students
+        const registeredSnapshot = await getDocs(collection(db, "registered_students"));
+        
+        if (registeredSnapshot.empty) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#6b7280;">No pre-registered students found. Add students in the "Register Students" tab.</td></tr>';
           document.getElementById('overviewExamCount').innerText = 0;
           return;
         }
 
-        let index = 1;
-        querySnapshot.forEach((docSnap) => {
+        // 2. Fetch all completed/attempted test results
+        const resultsSnapshot = await getDocs(collection(db, "students"));
+        const resultMap = {};
+
+        resultsSnapshot.forEach(docSnap => {
           const data = docSnap.data();
+          if (data.studentId) {
+            // Map student ID (lowercased) to their latest test score
+            resultMap[data.studentId.trim().toLowerCase()] = data;
+          }
+        });
+
+        tbody.innerHTML = '';
+        let index = 1;
+        let completedCount = 0;
+
+        // 3. Render every registered student into the leaderboard
+        registeredSnapshot.forEach(docSnap => {
+          const reg = docSnap.data();
+          const sKey = (reg.studentId || '').trim().toLowerCase();
+          const testData = resultMap[sKey];
+
           const tr = document.createElement('tr');
 
-          tr.innerHTML = `
-            <td>${index++}</td>
-            <td><strong style="color:#00529B;">${data.studentId || '--'}</strong></td>
-            <td><strong>${data.name || '--'}</strong></td>
-            <td>${data.fatherName || '--'}</td>
-            <td><strong style="color:#00529B;">${data.score || 'Pending'}</strong></td>
-            <td><span style="color:#16a34a; font-weight:bold;">${data.percentage || 'Pending'}</span></td>
-          `;
+          if (testData && testData.score !== "Pending Submission") {
+            completedCount++;
+            tr.innerHTML = `
+              <td>${index++}</td>
+              <td><strong style="color:#00529B;">${reg.studentId}</strong></td>
+              <td><strong>${reg.name}</strong></td>
+              <td>${reg.fatherName}</td>
+              <td><strong style="color:#00529B;">${testData.score}</strong></td>
+              <td><span style="color:#16a34a; font-weight:bold;">${testData.percentage}</span></td>
+            `;
+          } else {
+            tr.innerHTML = `
+              <td>${index++}</td>
+              <td><strong style="color:#00529B;">${reg.studentId}</strong></td>
+              <td><strong>${reg.name}</strong></td>
+              <td>${reg.fatherName}</td>
+              <td><span style="color:#dc2626; font-style:italic;">Not Attempted</span></td>
+              <td><span style="color:#6b7280;">--</span></td>
+            `;
+          }
+
           tbody.appendChild(tr);
         });
 
-        document.getElementById('overviewExamCount').innerText = querySnapshot.size;
+        document.getElementById('overviewExamCount').innerText = completedCount;
+
       } catch (e) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#dc2626;">Failed to fetch student records.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#dc2626;">Failed to fetch leaderboard records.</td></tr>';
       }
     }
+
 
     async function clearStudentLeaderboard() {
       if (confirm("Are you sure you want to delete all student records from the leaderboard?")) {
