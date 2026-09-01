@@ -75,9 +75,24 @@
     .skipped-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
     .skip-num-btn { background: #ffedd5; color: #9a3412; border: 1px solid #fdba74; padding: 8px; border-radius: 4px; font-weight: bold; font-size: 12px; cursor: pointer; }
 
-    /* PAGE 3: ADMIN DASHBOARD */
-    .admin-container { max-width: 950px; margin: 24px auto; width: 95%; background: white; padding: 24px; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .admin-header { border-bottom: 2px solid #00529B; padding-bottom: 12px; margin-bottom: 20px; }
+    /* PAGE 3: TABBED ADMIN DASHBOARD STYLING */
+    .admin-container { max-width: 1050px; margin: 20px auto; width: 95%; background: white; border-radius: 10px; border: 1px solid #e5e7eb; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; }
+    .admin-header { background: #00529B; color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+    
+    /* DASHBOARD TAB NAVIGATION */
+    .admin-nav-tabs { display: flex; background: #003d73; border-bottom: 1px solid #002b52; overflow-x: auto; }
+    .nav-tab-btn { background: transparent; color: #cbd5e1; border: none; padding: 12px 20px; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s; white-space: nowrap; border-bottom: 3px solid transparent; }
+    .nav-tab-btn:hover { color: white; background: rgba(255,255,255,0.05); }
+    .nav-tab-btn.active { color: white; background: #00529B; border-bottom: 3px solid #f59e0b; }
+
+    .tab-content { padding: 24px; display: none; }
+    .tab-content.active { display: block; }
+
+    /* STATS CARDS IN OVERVIEW TAB */
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; text-align: center; }
+    .stat-card-num { font-size: 28px; font-weight: bold; color: #00529B; margin-top: 4px; }
+
     .option-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
     .option-row input[type="text"] { flex: 1; margin: 0; }
 
@@ -102,16 +117,22 @@
 
     /* MODAL OVERLAY */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 100; }
-    .modal-content { background: white; border-radius: 8px; padding: 24px; max-width: 480px; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+    .modal-content { background: white; border-radius: 8px; padding: 24px; max-width: 520px; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.15); max-height: 90vh; overflow-y: auto; }
     .hidden { display: none !important; }
+
+    /* RULES LIST STYLING */
+    .rules-list { text-align: left; font-size: 13px; color: #374151; line-height: 1.6; margin: 16px 0; padding-left: 20px; }
+    .rules-list li { margin-bottom: 10px; }
 
     /* STRICT ISOLATED PRINT STYLING */
     @media print {
-      header, .no-print, .action-bar, .skipped-sidebar, .profile-sidebar { display: none !important; }
+      header, .no-print, .action-bar, .skipped-sidebar, .profile-sidebar, .admin-nav-tabs { display: none !important; }
       body { background: white; }
       .page-view { display: none !important; }
       .page-view.active { display: block !important; }
       .result-full-page, .admin-container { border: none !important; box-shadow: none !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; padding: 0 !important; }
+      .tab-content { display: none !important; }
+      #tab-leaderboard { display: block !important; }
     }
 
     @media (max-width: 768px) {
@@ -148,14 +169,14 @@
     </div>
   </div>
 
-  <!-- PAGE 2: STUDENT EXAMINATION VIEW (PROTECTED FROM COPY/PASTE) -->
+  <!-- PAGE 2: STUDENT EXAMINATION VIEW -->
   <div id="studentPage" class="page-view no-select">
     
-    <!-- STUDENT LOGIN MODAL -->
+    <!-- STEP 1: STUDENT LOGIN MODAL -->
     <div id="loginModal" class="modal-overlay">
       <div class="modal-content">
-        <h3 style="color: #00529B; margin-bottom: 4px; text-align: center; font-size: 16px;">STUDENT LOGIN</h3>
-        <p style="font-size: 12px; color: #6b7280; margin-bottom: 20px; text-align: center;">Enter your details to start the exam</p>
+        <h3 style="color: #00529B; margin-bottom: 4px; text-align: center; font-size: 16px;">STUDENT AUTHENTICATION</h3>
+        <p style="font-size: 12px; color: #6b7280; margin-bottom: 20px; text-align: center;">Enter your exact pre-registered details to access the exam</p>
         
         <label class="field-label">Student Name</label>
         <input type="text" id="inputName" class="input-field" placeholder="Enter full name">
@@ -163,7 +184,40 @@
         <label class="field-label">Father's Name</label>
         <input type="text" id="inputFather" class="input-field" placeholder="Enter father's name">
 
-        <button id="submitLoginBtn" class="btn-primary">Start Examination</button>
+        <label class="field-label">Unique Student ID</label>
+        <input type="text" id="inputId" class="input-field" placeholder="Enter unique ID (e.g. AZ-101)">
+
+        <button id="submitLoginBtn" class="btn-primary">Verify Credentials</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: EXAM RULES & CONFIRMATION MODAL -->
+    <div id="rulesModal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <h3 style="color: #00529B; border-bottom: 2px solid #00529B; padding-bottom: 8px; text-align: center; font-size: 16px;">EXAMINATION RULES & INSTRUCTIONS</h3>
+        
+        <div style="background: #f0f7ff; padding: 10px; border-radius: 6px; border: 1px solid #bae6fd; margin-top: 12px; font-size: 13px; color: #0369a1; display: flex; justify-content: space-between;">
+          <span><strong>Total MCQs:</strong> <span id="ruleMcqCount">0</span></span>
+          <span><strong>Test Time:</strong> <span id="ruleTimeLimit">0</span> Mins</span>
+        </div>
+
+        <ul class="rules-list">
+          <li><strong>Time Limit & Auto-Submit:</strong> The exam has a strict time limit (showing the exact duration set by the admin). When time expires, your test will automatically submit.</li>
+          <li><strong>Question Navigation & Skipping:</strong> You can skip questions and return to them later at any time using the "Skipped Questions" navigation panel.</li>
+          <li><strong>No Tab Switching (Anti-Cheating):</strong> Leaving or switching browser tabs during the test is strictly prohibited. Switching tabs once triggers an alert; a second tab switch will automatically submit your exam.</li>
+          <li><strong>Disabled Copy/Paste & Right-Click:</strong> Text selection, right-clicking, and copy shortcuts are disabled to maintain exam integrity.</li>
+          <li><strong>Final Submission:</strong> Once you complete all questions and submit, your score and percentage will be calculated immediately.</li>
+        </ul>
+
+        <div style="text-align: right; font-weight: bold; color: #00529B; font-size: 14px; margin-bottom: 16px;">
+          — Zahir Gul Khan
+        </div>
+
+        <div style="background: #fffbe3; border: 1px solid #fde047; padding: 10px; border-radius: 6px; text-align: center; font-size: 13px; font-weight: bold; color: #854d0e; margin-bottom: 16px;">
+          Are you ready to start the examination?
+        </div>
+
+        <button id="startTestBtn" class="btn-primary" style="background: #16a34a;">Start Exam Now</button>
       </div>
     </div>
 
@@ -183,6 +237,7 @@
       <div class="profile-sidebar">
         <div><span class="field-label">Student Name</span><strong id="candName">--</strong></div>
         <div><span class="field-label">Father Name</span><strong id="candFather">--</strong></div>
+        <div><span class="field-label">Student ID</span><strong id="candId" style="color:#00529B;">--</strong></div>
         <div><span class="field-label">Academy</span><strong>Al-Zahir Academy</strong></div>
         <div><span class="field-label">Current Subject</span><strong id="currentSubjectTag" style="color:#00529B">--</strong></div>
       </div>
@@ -212,26 +267,60 @@
     </div>
   </div>
 
-  <!-- PAGE 3: ADMIN MANAGEMENT DASHBOARD -->
+  <!-- PAGE 3: MODERN TABBED ADMIN DASHBOARD -->
   <div id="adminPage" class="page-view printable-view">
     <div class="admin-container">
-      <div class="admin-header">
-        <h2 style="color:#00529B;">Admin Dashboard</h2>
-        <p style="font-size: 12px; color: #6b7280;">Manage test configuration, question bank & student scores</p>
+      
+      <div class="admin-header no-print">
+        <div>
+          <h2 style="font-size:18px;">Admin Dashboard</h2>
+          <p style="font-size:12px; opacity:0.85;">Al-Zahir ETEA Coaching & Science Tuition Academy</p>
+        </div>
+        <div style="font-size: 12px; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 4px;">System Control</div>
       </div>
 
-      <!-- TIMER CONFIGURATION -->
-      <div class="no-print" style="background:#f0f7ff; padding:12px; border-radius:6px; border:1px solid #bae6fd; margin-bottom:16px;">
-        <label class="field-label" style="color:#0369a1;">Set Test Duration (Minutes)</label>
-        <div style="display:flex; gap:10px; margin-top:4px;">
-          <input type="number" id="testDurationInput" class="input-field" value="30" min="1" max="180" style="margin:0; max-width:150px;">
-          <button id="saveDurationBtn" style="background:#00529B; color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:12px;">Update Duration</button>
+      <!-- DASHBOARD TABS NAVIGATION BAR -->
+      <div class="admin-nav-tabs no-print">
+        <button class="nav-tab-btn active" onclick="switchAdminTab('overview')">⏱️ Duration & Status</button>
+        <button class="nav-tab-btn" onclick="switchAdminTab('add-question')">➕ Add Question</button>
+        <button class="nav-tab-btn" onclick="switchAdminTab('question-bank')">📚 Question Bank (<span id="tabQCount">0</span>)</button>
+        <button class="nav-tab-btn" onclick="switchAdminTab('students')">👥 Register Students</button>
+        <button class="nav-tab-btn" onclick="switchAdminTab('leaderboard')">🏆 Leaderboard</button>
+      </div>
+
+      <!-- TAB 1: OVERVIEW & DURATION SETTINGS -->
+      <div id="tab-overview" class="tab-content active">
+        <h3 style="font-size:15px; color:#00529B; margin-bottom:16px;">Test Overview & Settings</h3>
+        
+        <div class="dashboard-grid">
+          <div class="stat-card">
+            <span class="field-label">Total Cloud Questions</span>
+            <div class="stat-card-num" id="overviewQCount">0</div>
+          </div>
+          <div class="stat-card">
+            <span class="field-label">Pre-Registered Students</span>
+            <div class="stat-card-num" id="overviewStudentCount">0</div>
+          </div>
+          <div class="stat-card">
+            <span class="field-label">Completed Exams</span>
+            <div class="stat-card-num" id="overviewExamCount">0</div>
+          </div>
+        </div>
+
+        <div style="background:#f0f7ff; padding:16px; border-radius:8px; border:1px solid #bae6fd; max-width:500px;">
+          <h4 style="font-size:14px; color:#0369a1; margin-bottom:8px;">Configure Test Timer</h4>
+          <label class="field-label">Test Duration (Minutes)</label>
+          <div style="display:flex; gap:10px; margin-top:6px;">
+            <input type="number" id="testDurationInput" class="input-field" value="30" min="1" max="180" style="margin:0;">
+            <button id="saveDurationBtn" style="background:#00529B; color:white; border:none; padding:10px 18px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:13px; white-space:nowrap;">Save Duration</button>
+          </div>
         </div>
       </div>
 
-      <h3 class="no-print" id="formHeaderTitle" style="font-size: 14px; margin-bottom: 12px; color: #1f2937;">Add / Edit Question</h3>
-      
-      <div class="no-print">
+      <!-- TAB 2: ADD / EDIT QUESTION BUILDER -->
+      <div id="tab-add-question" class="tab-content">
+        <h3 id="formHeaderTitle" style="font-size: 15px; margin-bottom: 16px; color: #00529B;">Add New Question</h3>
+        
         <label class="field-label">Subject</label>
         <select id="formSubject" class="input-field">
           <option value="Mathematics">Mathematics</option>
@@ -268,18 +357,19 @@
           <input type="text" id="opt3" class="input-field" placeholder="Option D">
         </div>
 
-        <div style="display:flex; gap:10px; margin-top:10px;">
-          <button id="addSingleQBtn" style="flex:1; background:#16a34a; color:white; border:none; padding:10px; border-radius:6px; font-weight:bold; cursor:pointer;">Save Question to Cloud</button>
-          <button id="cancelEditBtn" class="hidden" style="background:#6b7280; color:white; border:none; padding:10px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">Cancel Edit</button>
-          <button id="clearAllQBtn" style="background:#dc2626; color:white; border:none; padding:10px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">Clear All Questions</button>
+        <div style="display:flex; gap:10px; margin-top:16px;">
+          <button id="addSingleQBtn" style="flex:1; background:#00529B; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer;">Save Question to Cloud</button>
+          <button id="cancelEditBtn" class="hidden" style="background:#6b7280; color:white; border:none; padding:12px 18px; border-radius:6px; font-weight:bold; cursor:pointer;">Cancel Edit</button>
         </div>
-
-        <hr style="margin: 20px 0;">
       </div>
 
-      <!-- QUESTION BANK TABLE -->
-      <div class="no-print" style="margin-bottom: 24px;">
-        <h4 style="font-size: 14px; color:#00529B; margin-bottom: 8px;">Uploaded Question Bank (<span id="cloudCount">0</span> Questions)</h4>
+      <!-- TAB 3: QUESTION BANK TABLE -->
+      <div id="tab-question-bank" class="tab-content">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <h3 style="font-size: 15px; color:#00529B;">Uploaded Question Bank (<span id="cloudCount">0</span> Questions)</h3>
+          <button id="clearAllQBtn" style="background:#dc2626; color:white; border:none; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:12px;">Clear All Questions</button>
+        </div>
+
         <div class="table-wrapper">
           <table class="custom-table">
             <thead>
@@ -298,31 +388,76 @@
         </div>
       </div>
 
-      <!-- LEADERBOARD TABLE SECTION -->
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 16px; margin-bottom: 8px;">
-        <h4 style="font-size: 14px; color:#00529B;">Student Marks Leaderboard</h4>
-        <div class="no-print" style="display:flex; gap:8px;">
-          <button id="downloadLeaderboardPdfBtn" style="background:#16a34a; color:white; border:none; padding:6px 12px; border-radius:4px; font-size:12px; font-weight:bold; cursor:pointer;">Download PDF</button>
-          <button id="clearLeaderboardBtn" style="background:#dc2626; color:white; border:none; padding:6px 12px; border-radius:4px; font-size:12px; font-weight:bold; cursor:pointer;">Clear Leaderboard</button>
+      <!-- TAB 4: REGISTER STUDENTS -->
+      <div id="tab-students" class="tab-content">
+        <h3 style="font-size: 15px; color:#00529B; margin-bottom:12px;">Register New Student for Examination</h3>
+        
+        <div style="background:#f9fafb; padding:16px; border-radius:8px; border:1px solid #e5e7eb; margin-bottom:20px;">
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
+            <div>
+              <label class="field-label">Student Name</label>
+              <input type="text" id="regName" class="input-field" placeholder="Full Name" style="margin:0;">
+            </div>
+            <div>
+              <label class="field-label">Father's Name</label>
+              <input type="text" id="regFather" class="input-field" placeholder="Father's Name" style="margin:0;">
+            </div>
+            <div>
+              <label class="field-label">Unique Student ID</label>
+              <input type="text" id="regId" class="input-field" placeholder="e.g. AZ-101" style="margin:0;">
+            </div>
+          </div>
+          <button id="addRegisteredStudentBtn" style="margin-top:12px; background:#16a34a; color:white; border:none; padding:10px 18px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:13px;">Register Student</button>
+        </div>
+
+        <h4 style="font-size: 14px; color:#374151; margin-bottom: 8px;">Pre-Registered Students List</h4>
+        <div class="table-wrapper">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Student ID</th>
+                <th>Name</th>
+                <th>Father Name</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="registeredStudentsTableBody">
+              <tr><td colspan="5" style="text-align:center; color:#6b7280;">Loading registered students...</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <div class="table-wrapper">
-        <table class="custom-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Student Name</th>
-              <th>Father Name</th>
-              <th>Marks Obtained</th>
-              <th>Percentage</th>
-            </tr>
-          </thead>
-          <tbody id="studentLeaderboardBody">
-            <tr><td colspan="5" style="text-align:center; color:#6b7280;">Loading student records...</td></tr>
-          </tbody>
-        </table>
+      <!-- TAB 5: LEADERBOARD & RESULTS -->
+      <div id="tab-leaderboard" class="tab-content">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+          <h3 style="font-size: 15px; color:#00529B;">Student Marks Leaderboard</h3>
+          <div class="no-print" style="display:flex; gap:8px;">
+            <button id="downloadLeaderboardPdfBtn" style="background:#16a34a; color:white; border:none; padding:6px 12px; border-radius:4px; font-size:12px; font-weight:bold; cursor:pointer;">Download PDF</button>
+            <button id="clearLeaderboardBtn" style="background:#dc2626; color:white; border:none; padding:6px 12px; border-radius:4px; font-size:12px; font-weight:bold; cursor:pointer;">Clear Leaderboard</button>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Student ID</th>
+                <th>Student Name</th>
+                <th>Father Name</th>
+                <th>Marks Obtained</th>
+                <th>Percentage</th>
+              </tr>
+            </thead>
+            <tbody id="studentLeaderboardBody">
+              <tr><td colspan="6" style="text-align:center; color:#6b7280;">Loading student records...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
+
     </div>
   </div>
 
@@ -338,6 +473,7 @@
       <div style="text-align: left; max-width: 400px; margin: 0 auto 20px; font-size: 15px; line-height: 1.6;">
         <p><strong>Student Name:</strong> <span id="resName">--</span></p>
         <p><strong>Father Name:</strong> <span id="resFather">--</span></p>
+        <p><strong>Student ID:</strong> <span id="resId">--</span></p>
         <p><strong>Academy:</strong> Al-Zahir ETEA Academy</p>
       </div>
 
@@ -368,6 +504,7 @@
 
     let studentName = "";
     let studentFather = "";
+    let studentId = "";
     let studentDocId = "";
     let questions = [];
     let currentIndex = 0;
@@ -385,6 +522,7 @@
     const adminPage = document.getElementById('adminPage');
     const resultPage = document.getElementById('resultPage');
     const loginModal = document.getElementById('loginModal');
+    const rulesModal = document.getElementById('rulesModal');
 
     document.getElementById('homeNavBtn').addEventListener('click', showWelcomePage);
     document.getElementById('selectStudentBtn').addEventListener('click', openStudentFlow);
@@ -401,6 +539,7 @@
       welcomePage.classList.remove('active');
       studentPage.classList.add('active');
       loginModal.classList.remove('hidden');
+      rulesModal.classList.add('hidden');
     }
 
     function openAdminFlow() {
@@ -411,11 +550,21 @@
         resultPage.classList.remove('active');
         adminPage.classList.add('active');
         fetchCurrentCloudQuestions();
+        loadRegisteredStudents();
         loadStudentLeaderboard();
       } else {
         alert("Incorrect password.");
       }
     }
+
+    // ADMIN TAB SWITCHING FUNCTION
+    window.switchAdminTab = function(tabName) {
+      document.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      event.target.classList.add('active');
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+    };
 
     // DISABLING COPY, PASTE & RIGHT CLICK FOR EXAM SECURITY
     document.getElementById('studentPage').addEventListener('contextmenu', e => e.preventDefault());
@@ -427,7 +576,7 @@
 
     // TAB SWITCHING WARNING SYSTEM
     document.addEventListener('visibilitychange', () => {
-      if (studentPage.classList.contains('active') && !loginModal.classList.contains('hidden')) return;
+      if (studentPage.classList.contains('active') && (!loginModal.classList.contains('hidden') || !rulesModal.classList.contains('hidden'))) return;
       if (studentPage.classList.contains('active')) {
         tabSwitchCount++;
         if (tabSwitchCount === 1) {
@@ -439,34 +588,60 @@
       }
     });
 
-    // Student Examination Logic
-    document.getElementById('submitLoginBtn').addEventListener('click', submitLogin);
+    // Student Authentication & Exam Flow Logic
+    document.getElementById('submitLoginBtn').addEventListener('click', verifyStudentCredentials);
+    document.getElementById('startTestBtn').addEventListener('click', beginExamTimer);
     document.getElementById('btnSkip').addEventListener('click', skipQuestion);
     document.getElementById('btnSave').addEventListener('click', saveAndNext);
     document.getElementById('addSingleQBtn').addEventListener('click', addSingleQuestion);
     document.getElementById('cancelEditBtn').addEventListener('click', resetQuestionForm);
     document.getElementById('clearAllQBtn').addEventListener('click', clearAllQuestions);
     document.getElementById('saveDurationBtn').addEventListener('click', saveTestDuration);
+    document.getElementById('addRegisteredStudentBtn').addEventListener('click', registerStudentInDb);
     document.getElementById('clearLeaderboardBtn').addEventListener('click', clearStudentLeaderboard);
     document.getElementById('downloadLeaderboardPdfBtn').addEventListener('click', () => window.print());
     document.getElementById('downloadPdfBtn').addEventListener('click', () => window.print());
 
-    async function submitLogin() {
+    async function verifyStudentCredentials() {
       const name = document.getElementById('inputName').value.trim();
       const father = document.getElementById('inputFather').value.trim();
+      const sId = document.getElementById('inputId').value.trim();
 
-      if (!name || !father) {
-        alert("Please enter both Name and Father's Name.");
+      if (!name || !father || !sId) {
+        alert("Please fill in Student Name, Father's Name, and Unique Student ID.");
         return;
       }
 
-      studentName = name;
-      studentFather = father;
-      document.getElementById('candName').innerText = studentName;
-      document.getElementById('candFather').innerText = studentFather;
-
       try {
+        const querySnapshot = await getDocs(collection(db, "registered_students"));
+        let matchFound = false;
+
+        querySnapshot.forEach(docSnap => {
+          const reg = docSnap.data();
+          if (
+            reg.studentId.trim().toLowerCase() === sId.toLowerCase() &&
+            reg.name.trim().toLowerCase() === name.toLowerCase() &&
+            reg.fatherName.trim().toLowerCase() === father.toLowerCase()
+          ) {
+            matchFound = true;
+          }
+        });
+
+        if (!matchFound) {
+          alert("Authentication Failed! Incorrect Name, Father Name, or Student ID. Contact the Academy Admin.");
+          return;
+        }
+
+        studentName = name;
+        studentFather = father;
+        studentId = sId;
+
+        document.getElementById('candName').innerText = studentName;
+        document.getElementById('candFather').innerText = studentFather;
+        document.getElementById('candId').innerText = studentId;
+
         const docRef = await addDoc(collection(db, "students"), {
+          studentId: studentId,
           name: studentName,
           fatherName: studentFather,
           loginTime: new Date().toISOString(),
@@ -474,29 +649,44 @@
           percentage: "Pending"
         });
         studentDocId = docRef.id;
+
         loginModal.classList.add('hidden');
-        startTestSession();
+        loadTestConfigurationForRules();
+
       } catch (e) {
-        alert("Database Error: Check Firebase permissions.");
+        alert("Database connection error. Please try again.");
       }
     }
 
-    async function startTestSession() {
+    async function loadTestConfigurationForRules() {
       try {
         const docSnap = await getDoc(doc(db, "tests", "class7"));
         if (docSnap.exists() && docSnap.data().questions && docSnap.data().questions.length > 0) {
           questions = docSnap.data().questions;
+          let durMins = 30;
           if (docSnap.data().durationMinutes) {
-            allowedDurationSeconds = docSnap.data().durationMinutes * 60;
+            durMins = docSnap.data().durationMinutes;
           }
-          startTimer();
-          renderQuestion();
+          allowedDurationSeconds = durMins * 60;
+
+          document.getElementById('ruleMcqCount').innerText = questions.length;
+          document.getElementById('ruleTimeLimit').innerText = durMins;
+          document.getElementById('remainingTime').innerText = `${String(durMins).padStart(2, '0')}:00`;
+
+          rulesModal.classList.remove('hidden');
         } else {
-          document.getElementById('questionText').innerText = "No test currently uploaded by Admin.";
+          alert("No active examination questions found in the database!");
+          showWelcomePage();
         }
       } catch (e) {
-        document.getElementById('questionText').innerText = "Error loading test. Check Firebase connection.";
+        alert("Error loading test config. Check internet connection.");
       }
+    }
+
+    function beginExamTimer() {
+      rulesModal.classList.add('hidden');
+      startTimer();
+      renderQuestion();
     }
 
     function startTimer() {
@@ -572,7 +762,6 @@
 
       updateProgressBar();
 
-      // Trigger MathJax render for formulas
       if (window.MathJax && window.MathJax.typesetPromise) {
         window.MathJax.typesetPromise();
       }
@@ -659,6 +848,7 @@
 
       document.getElementById('resName').innerText = studentName;
       document.getElementById('resFather').innerText = studentFather;
+      document.getElementById('resId').innerText = studentId;
       document.getElementById('finalScore').innerText = `${score} / ${questions.length}`;
       document.getElementById('finalPercent').innerText = `Percentage: ${percentage}%`;
 
@@ -666,7 +856,78 @@
       resultPage.classList.add('active');
     }
 
-    // Admin Dashboard Operations
+    // Admin Pre-Registered Student Operations
+    async function registerStudentInDb() {
+      const name = document.getElementById('regName').value.trim();
+      const father = document.getElementById('regFather').value.trim();
+      const sId = document.getElementById('regId').value.trim();
+
+      if (!name || !father || !sId) {
+        alert("Please enter Name, Father's Name, and Student ID.");
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "registered_students"), {
+          studentId: sId,
+          name: name,
+          fatherName: father,
+          registeredAt: new Date().toISOString()
+        });
+
+        document.getElementById('regName').value = '';
+        document.getElementById('regFather').value = '';
+        document.getElementById('regId').value = '';
+
+        alert(`Student ${name} (${sId}) registered successfully!`);
+        loadRegisteredStudents();
+      } catch (e) {
+        alert("Error registering student in cloud database.");
+      }
+    }
+
+    async function loadRegisteredStudents() {
+      const tbody = document.getElementById('registeredStudentsTableBody');
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading...</td></tr>';
+
+      try {
+        const querySnapshot = await getDocs(collection(db, "registered_students"));
+        tbody.innerHTML = '';
+
+        if (querySnapshot.empty) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#6b7280;">No pre-registered students found.</td></tr>';
+          document.getElementById('overviewStudentCount').innerText = 0;
+          return;
+        }
+
+        let idx = 1;
+        querySnapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${idx++}</td>
+            <td><strong style="color:#00529B;">${data.studentId}</strong></td>
+            <td>${data.name}</td>
+            <td>${data.fatherName}</td>
+            <td><button class="btn-delete" onclick="deleteRegisteredStudent('${docSnap.id}')">Remove</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        document.getElementById('overviewStudentCount').innerText = querySnapshot.size;
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#dc2626;">Error fetching student list.</td></tr>';
+      }
+    }
+
+    window.deleteRegisteredStudent = async function(docId) {
+      if (confirm("Remove this student from the registered list?")) {
+        await deleteDoc(doc(db, "registered_students", docId));
+        loadRegisteredStudents();
+      }
+    };
+
+    // Admin Question Management
     async function fetchCurrentCloudQuestions() {
       const docSnap = await getDoc(doc(db, "tests", "class7"));
       if (docSnap.exists()) {
@@ -679,6 +940,8 @@
         questions = [];
       }
       document.getElementById('cloudCount').innerText = questions.length;
+      document.getElementById('tabQCount').innerText = questions.length;
+      document.getElementById('overviewQCount').innerText = questions.length;
       renderQuestionBankTable();
     }
 
@@ -728,6 +991,10 @@
       document.getElementById('formHeaderTitle').innerText = `Edit Question #${idx + 1}`;
       document.getElementById('addSingleQBtn').innerText = "Update Question";
       document.getElementById('cancelEditBtn').classList.remove('hidden');
+
+      // Switch to Add Question tab
+      const tabBtn = document.querySelectorAll('.nav-tab-btn')[1];
+      tabBtn.click();
     };
 
     window.deleteQuestion = async function(idx) {
@@ -735,6 +1002,8 @@
         questions.splice(idx, 1);
         await setDoc(doc(db, "tests", "class7"), { questions: questions }, { merge: true });
         document.getElementById('cloudCount').innerText = questions.length;
+        document.getElementById('tabQCount').innerText = questions.length;
+        document.getElementById('overviewQCount').innerText = questions.length;
         renderQuestionBankTable();
       }
     };
@@ -795,6 +1064,8 @@
 
       resetQuestionForm();
       document.getElementById('cloudCount').innerText = questions.length;
+      document.getElementById('tabQCount').innerText = questions.length;
+      document.getElementById('overviewQCount').innerText = questions.length;
       renderQuestionBankTable();
 
       alert("Question bank updated successfully!");
@@ -805,6 +1076,8 @@
         questions = [];
         await setDoc(doc(db, "tests", "class7"), { questions: [] }, { merge: true });
         document.getElementById('cloudCount').innerText = 0;
+        document.getElementById('tabQCount').innerText = 0;
+        document.getElementById('overviewQCount').innerText = 0;
         renderQuestionBankTable();
         alert("Question bank cleared successfully.");
       }
@@ -812,14 +1085,15 @@
 
     async function loadStudentLeaderboard() {
       const tbody = document.getElementById('studentLeaderboardBody');
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading...</td></tr>';
       
       try {
         const querySnapshot = await getDocs(collection(db, "students"));
         tbody.innerHTML = '';
 
         if (querySnapshot.empty) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#6b7280;">No student records found.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#6b7280;">No student records found.</td></tr>';
+          document.getElementById('overviewExamCount').innerText = 0;
           return;
         }
 
@@ -830,6 +1104,7 @@
 
           tr.innerHTML = `
             <td>${index++}</td>
+            <td><strong style="color:#00529B;">${data.studentId || '--'}</strong></td>
             <td><strong>${data.name || '--'}</strong></td>
             <td>${data.fatherName || '--'}</td>
             <td><strong style="color:#00529B;">${data.score || 'Pending'}</strong></td>
@@ -837,8 +1112,10 @@
           `;
           tbody.appendChild(tr);
         });
+
+        document.getElementById('overviewExamCount').innerText = querySnapshot.size;
       } catch (e) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#dc2626;">Failed to fetch student records.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#dc2626;">Failed to fetch student records.</td></tr>';
       }
     }
 
