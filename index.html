@@ -788,7 +788,6 @@
       }
       nextAvailableQuestion();
     }
-
     function nextAvailableQuestion() {
       // Find next unanswered question
       for (let i = 0; i < questions.length; i++) {
@@ -800,23 +799,12 @@
         }
       }
       
-      // If all questions are answered, remain on current question & prompt student
+      // Mark that the student reached the end so updateProgressBar doesn't re-hide the button
+      window.hasReachedEnd = true;
+      document.getElementById('btnSubmitExam').classList.remove('hidden');
       alert("You have reached the end of all questions. Click 'Submit Exam' when you are ready to finish.");
     }
 
-    function confirmSubmission() {
-      const answeredCount = Object.keys(lockedAnswers).length;
-      const totalCount = questions.length;
-
-      const confirmMsg = `Are you sure you want to submit your exam?\n\n` +
-                         `• Answered: ${answeredCount} / ${totalCount}\n` +
-                         `• Skipped / Unanswered: ${totalCount - answeredCount}\n\n` +
-                         `IMPORTANT: After submitting, make sure to download and print your official result card on the next screen.`;
-
-      if (confirm(confirmMsg)) {
-        finishTest();
-      }
-    }
 
 
     function renderSkipped() {
@@ -842,14 +830,15 @@
       document.getElementById('progressBar').style.width = pct + '%';
       document.getElementById('progressPercent').innerText = pct + '%';
 
-      // Show 'Submit Exam' button ONLY when all questions are answered
+      // Show Submit Exam button if ALL questions are answered OR if the student has reached the end
       const submitBtn = document.getElementById('btnSubmitExam');
-      if (completed === total) {
+      if (completed === total || window.hasReachedEnd) {
         submitBtn.classList.remove('hidden');
       } else {
         submitBtn.classList.add('hidden');
       }
     }
+
 
 
     async function finishTest() {
