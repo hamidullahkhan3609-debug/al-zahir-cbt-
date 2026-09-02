@@ -257,7 +257,7 @@
         <div class="action-bar">
           <button id="btnSkip" class="btn-skip">Skip Question</button>
           <button id="btnSave" class="btn-save">Save & Next</button>
-          <button id="btnSubmitExam" class="btn-primary" style="background:#dc2626; max-width:160px;">Submit Exam</button>
+          <button id="btnSubmitExam" class="btn-primary hidden" style="background:#dc2626; max-width:160px;">Submit Exam</button>
         </div>
       </div>
 
@@ -841,7 +841,16 @@
       const pct = Math.round((completed / total) * 100);
       document.getElementById('progressBar').style.width = pct + '%';
       document.getElementById('progressPercent').innerText = pct + '%';
+
+      // Show 'Submit Exam' button ONLY when all questions are answered
+      const submitBtn = document.getElementById('btnSubmitExam');
+      if (completed === total) {
+        submitBtn.classList.remove('hidden');
+      } else {
+        submitBtn.classList.add('hidden');
+      }
     }
+
 
     async function finishTest() {
       clearInterval(timerInterval);
