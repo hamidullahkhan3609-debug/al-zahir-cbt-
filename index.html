@@ -336,7 +336,7 @@
             <button id="saveDurationBtn" style="background:#00529B; color:white; border:none; padding:10px 18px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:13px; white-space:nowrap;">Save Duration</button>
           </div>
         </div>
-                <!-- SUBJECT QUOTA GENERATOR -->
+         <!-- SUBJECT QUOTA GENERATOR -->
         <div style="background: #f9fafb; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; margin-top: 20px; max-width: 500px;">
           <h4 style="font-size: 14px; color: #00529B; margin-bottom: 12px;">Subject-Balanced Test Generator</h4>
           
@@ -344,14 +344,6 @@
             <div>
               <label class="field-label">Mathematics</label>
               <input type="number" id="quotaMath" class="input-field" value="5" min="0">
-            </div>
-            <div>
-              <label class="field-label">Physics</label>
-              <input type="number" id="quotaPhysics" class="input-field" value="5" min="0">
-            </div>
-            <div>
-              <label class="field-label">Chemistry</label>
-              <input type="number" id="quotaChem" class="input-field" value="5" min="0">
             </div>
             <div>
               <label class="field-label">General Science</label>
@@ -364,6 +356,10 @@
             <div>
               <label class="field-label">Urdu</label>
               <input type="number" id="quotaUrdu" class="input-field" value="5" min="0">
+            </div>
+            <div style="grid-column: span 2;">
+              <label class="field-label">Islamiat</label>
+              <input type="number" id="quotaIslamiat" class="input-field" value="5" min="0">
             </div>
           </div>
 
@@ -391,13 +387,12 @@
         <label class="field-label">Subject</label>
         <select id="formSubject" class="input-field">
           <option value="Mathematics">Mathematics</option>
-          <option value="Physics">Physics</option>
-          <option value="Chemistry">Chemistry</option>
           <option value="General Science">General Science</option>
           <option value="English">English</option>
           <option value="Urdu">Urdu</option>
           <option value="Islamiat">Islamiat</option>
         </select>
+
 
         <label class="field-label">Question Text (Use LaTeX like $$\sqrt{x}$$ or $$\frac{a}{b}$$ for math formulas)</label>
         <input type="text" id="formQuestion" class="input-field" placeholder="Enter question statement...">
@@ -1259,49 +1254,84 @@
       const file = fileInput.files[0];
 
       if (!file) {
-        alert("Please select a .csv file exported from Google Sheets!");
+        alert("Please select a .csv file first!");
         return;
       }
 
       const reader = new FileReader();
+
+      reader.onerror = function() {
+        alert("Error reading file from device. Please re-select the file.");
+      };
+
       reader.onload = async function(e) {
-        const text = e.target.result;
-        const rows = parseCsvText(text);
+        try {
+          const text = e.target.result;
+          const rows = parseCsvText(text);
 
-        if (rows.length < 2) {
-          alert("The CSV file is empty or formatted incorrectly.");
-          return;
-        }
-
-        let importedQuestions = [];
-
-        // Skip Header Row (i = 1)
-        for (let i = 1; i < rows.length; i++) {
-          const row = rows[i];
-          if (row.length >= 7 && row[1].trim() !== '') {
-            importedQuestions.push({
-              subject: row[0].trim() || 'General Science',
-              question: row[1].trim(),
-              options: [row[2].trim(), row[3].trim(), row[4].trim(), row[5].trim()],
-              answer: parseInt(row[6].trim(), 10) || 0,
-              imageUrl: row[7] ? row[7].trim() : ''
-            });
+          if (rows.length < 2) {
+            alert("The CSV file is empty or missing data rows.");
+            return;
           }
-        }
 
-        if (importedQuestions.length > 0) {
-          questions.push(...importedQuestions);
-          await setDoc(doc(db, "tests", "class7"), { questions: questions }, { merge: true });
-          alert(`Successfully imported ${importedQuestions.length} MCQs into the database!`);
-          fetchCurrentCloudQuestions();
-          fileInput.value = '';
-        } else {
-          alert("No valid question rows were found.");
+          let importedQuestions = [];
+
+          // Skip Header Row 0
+          for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+
+            // Validate question statement in Column B
+            if (row.length >= 7 && row[1] && row[1].trim() !== '') {
+              
+              // Helper to map "OptionA", "Option B", "A", "0", etc. to numeric index (0-3)
+              let rawAns = row[6] ? row[6].trim().toLowerCase() : '0';
+              let ansIndex = 0;
+
+              if (rawAns.includes('a') || rawAns === '0') {
+                ansIndex = 0;
+              } else if (rawAns.includes('b') || rawAns === '1') {
+                ansIndex = 1;
+              } else if (rawAns.includes('c') || rawAns === '2') {
+                ansIndex = 2;
+              } else if (rawAns.includes('d') || rawAns === '3') {
+                ansIndex = 3;
+              }
+
+              importedQuestions.push({
+                subject: row[0] ? row[0].trim() : 'General Science',
+                question: row[1].trim(),
+                options: [
+                  row[2] ? row[2].trim() : '',
+                  row[3] ? row[3].trim() : '',
+                  row[4] ? row[4].trim() : '',
+                  row[5] ? row[5].trim() : ''
+                ],
+                answer: ansIndex,
+                imageUrl: row[7] ? row[7].trim() : ''
+              });
+            }
+          }
+
+          if (importedQuestions.length > 0) {
+            // Append new questions to cloud database
+            const updatedQuestions = [...questions, ...importedQuestions];
+
+            await setDoc(doc(db, "tests", "class7"), { questions: updatedQuestions }, { merge: true });
+
+            alert(`Success! Uploaded ${importedQuestions.length} MCQs to the database.`);
+            await fetchCurrentCloudQuestions();
+            fileInput.value = '';
+          } else {
+            alert("No valid questions found. Check your CSV rows.");
+          }
+        } catch (err) {
+          alert("Upload failed: " + err.message);
         }
       };
 
       reader.readAsText(file);
     }
+
 
     // Helper: Parse CSV accounting for quoted sentences and internal commas
     function parseCsvText(text) {
@@ -1341,11 +1371,10 @@
 
       const quotas = {
         'Mathematics': parseInt(document.getElementById('quotaMath').value, 10) || 0,
-        'Physics': parseInt(document.getElementById('quotaPhysics').value, 10) || 0,
-        'Chemistry': parseInt(document.getElementById('quotaChem').value, 10) || 0,
         'General Science': parseInt(document.getElementById('quotaSci').value, 10) || 0,
         'English': parseInt(document.getElementById('quotaEng').value, 10) || 0,
-        'Urdu': parseInt(document.getElementById('quotaUrdu').value, 10) || 0
+        'Urdu': parseInt(document.getElementById('quotaUrdu').value, 10) || 0,
+        'Islamiat': parseInt(document.getElementById('quotaIslamiat').value, 10) || 0
       };
 
       let compiledExam = [];
@@ -1353,17 +1382,13 @@
       for (const [subject, requestedCount] of Object.entries(quotas)) {
         if (requestedCount <= 0) continue;
 
-        // Filter available questions in bank for the current subject
         let pool = questions.filter(q => (q.subject || '').toLowerCase() === subject.toLowerCase());
-
-        // Fallback: Take requested quota or max available if bank has fewer
         let countToTake = Math.min(requestedCount, pool.length);
 
         if (pool.length < requestedCount) {
           console.warn(`Only ${pool.length} questions available for ${subject}. Taking all available.`);
         }
 
-        // Shuffle pool and select quota
         let shuffled = pool.sort(() => 0.5 - Math.random());
         compiledExam.push(...shuffled.slice(0, countToTake));
       }
@@ -1373,15 +1398,14 @@
         return;
       }
 
-      // Shuffle final assembled exam so subjects are mixed
       compiledExam = compiledExam.sort(() => 0.5 - Math.random());
 
-      // Save assembled exam set to active exam record in Firebase
       await setDoc(doc(db, "tests", "class7"), { questions: compiledExam }, { merge: true });
       
       alert(`Success! Published a subject-balanced exam containing ${compiledExam.length} MCQs.`);
       fetchCurrentCloudQuestions();
     }
+
       
     }
   </script>
