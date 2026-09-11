@@ -621,13 +621,25 @@
       document.getElementById('downloadPdfBtn')?.addEventListener('click', () => window.print());
     });
 
-    function showWelcomePage() {
+      function showWelcomePage() {
+      // Check if student is actively taking the exam
+        if (studentPage.classList.contains('active') && timerInterval !== null) {
+          const confirmExit = confirm("Leaving to the Main Menu will immediately end and submit your examination! Are you sure?");
+          if (confirmExit) {
+            finishTest(); // End test and calculate score
+            return;
+          } else {
+            return; // Cancel navigation, stay in test
+          }
+        }
+
       document.title = "AL-ZAHIR ETEA COACHING & SCIENCE TUITION ACADEMY";
       studentPage.classList.remove('active');
       adminPage.classList.remove('active');
       resultPage.classList.remove('active');
       welcomePage.classList.add('active');
     }
+
 
     function openStudentFlow() {
       welcomePage.classList.remove('active');
@@ -1236,7 +1248,7 @@
       }
     }
 
-    // 1. BULK CSV IMPORT FUNCTION
+    // 1. BULK CSV IMPORT FUNCTION (Saves to Question Cloud)
     async function parseAndUploadCsv() {
       const fileInput = document.getElementById('csvFileInput');
       const file = fileInput?.files[0];
@@ -1254,16 +1266,16 @@
 
       reader.onload = async function(e) {
         try {
-          const text = e.target.result;
-          const rows = parseCsvText(text);
+          const rows = parseCsvText(e.target.result);
 
           if (rows.length < 2) {
             alert("The CSV file is empty or missing data rows.");
             return;
           }
 
-          let importedQuestions = [];
+          let newQuestions = [];
 
+          // Skip Header Row 0
           for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
 
@@ -1276,7 +1288,7 @@
               else if (rawAns.includes('c') || rawAns === '2') ansIndex = 2;
               else if (rawAns.includes('d') || rawAns === '3') ansIndex = 3;
 
-              importedQuestions.push({
+              newQuestions.push({
                 subject: row[0] ? row[0].trim() : 'General Science',
                 question: row[1].trim(),
                 options: [
@@ -1291,12 +1303,17 @@
             }
           }
 
-          if (importedQuestions.length > 0) {
-            const updatedQuestions = [...questions, ...importedQuestions];
-            await setDoc(doc(db, "tests", "class7"), { questions: updatedQuestions }, { merge: true });
+          if (newQuestions.length > 0) {
+            // Save directly to Question Cloud document in Firebase
+            const cloudDocRef = doc(db, "question_cloud", "all_mcqs");
+            const cloudSnap = await getDoc(cloudDocRef);
+            let cloudBank = cloudSnap.exists() ? (cloudSnap.data().questions || []) : [];
 
-            alert(`Success! Uploaded ${importedQuestions.length} MCQs to the database.`);
-            await fetchCurrentCloudQuestions();
+            cloudBank.push(...newQuestions);
+            await setDoc(cloudDocRef, { questions: cloudBank });
+
+            alert(`Success! Saved ${newQuestions.length} MCQs to the Question Cloud. Total Cloud Questions: ${cloudBank.length}`);
+            fetchCurrentCloudQuestions();
             fileInput.value = '';
           } else {
             alert("No valid questions found in CSV.");
@@ -1308,6 +1325,7 @@
 
       reader.readAsText(file);
     }
+
 
     function parseCsvText(text) {
       const lines = text.split(/\r\n|\n/);
@@ -1336,13 +1354,16 @@
       }
       return result;
     }
-
-    // 2. SUBJECT QUOTA TEST GENERATOR
+    // 2. SUBJECT QUOTA TEST GENERATOR (Pulls from Question Cloud)
     async function publishBalancedTest() {
-      if (questions.length === 0) {
-        alert("Your question bank is empty! Please upload a CSV or add questions first.");
+      // Fetch question bank from Question Cloud
+      const cloudSnap = await getDoc(doc(db, "question_cloud", "all_mcqs"));
+      if (!cloudSnap.exists() || !cloudSnap.data().questions || cloudSnap.data().questions.length === 0) {
+        alert("Your Question Cloud is empty! Please upload a CSV to the cloud first.");
         return;
       }
+
+      const cloudBank = cloudSnap.data().questions;
 
       const quotas = {
         'Mathematics': parseInt(document.getElementById('quotaMath')?.value || 0, 10),
@@ -1357,7 +1378,7 @@
       for (const [subject, requestedCount] of Object.entries(quotas)) {
         if (requestedCount <= 0) continue;
 
-        let pool = questions.filter(q => (q.subject || '').toLowerCase() === subject.toLowerCase());
+        let pool = cloudBank.filter(q => (q.subject || '').toLowerCase() === subject.toLowerCase());
         let countToTake = Math.min(requestedCount, pool.length);
 
         let shuffled = pool.sort(() => 0.5 - Math.random());
@@ -1365,17 +1386,19 @@
       }
 
       if (compiledExam.length === 0) {
-        alert("No questions matched your subject quotas. Check your bank's subject tags.");
+        alert("No questions matched your subject quotas. Check your cloud bank's subject tags.");
         return;
       }
 
       compiledExam = compiledExam.sort(() => 0.5 - Math.random());
 
+      // Save active compiled test set to student exam document
       await setDoc(doc(db, "tests", "class7"), { questions: compiledExam }, { merge: true });
       
-      alert(`Success! Published a subject-balanced exam containing ${compiledExam.length} MCQs.`);
+      alert(`Success! Published a subject-balanced exam containing ${compiledExam.length} MCQs out of ${cloudBank.length} Cloud MCQs.`);
       fetchCurrentCloudQuestions();
     }
+
   </script>
 
 
