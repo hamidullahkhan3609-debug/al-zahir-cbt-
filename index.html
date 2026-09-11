@@ -336,10 +336,56 @@
             <button id="saveDurationBtn" style="background:#00529B; color:white; border:none; padding:10px 18px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:13px; white-space:nowrap;">Save Duration</button>
           </div>
         </div>
+                <!-- SUBJECT QUOTA GENERATOR -->
+        <div style="background: #f9fafb; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; margin-top: 20px; max-width: 500px;">
+          <h4 style="font-size: 14px; color: #00529B; margin-bottom: 12px;">Subject-Balanced Test Generator</h4>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px;">
+            <div>
+              <label class="field-label">Mathematics</label>
+              <input type="number" id="quotaMath" class="input-field" value="5" min="0">
+            </div>
+            <div>
+              <label class="field-label">Physics</label>
+              <input type="number" id="quotaPhysics" class="input-field" value="5" min="0">
+            </div>
+            <div>
+              <label class="field-label">Chemistry</label>
+              <input type="number" id="quotaChem" class="input-field" value="5" min="0">
+            </div>
+            <div>
+              <label class="field-label">General Science</label>
+              <input type="number" id="quotaSci" class="input-field" value="5" min="0">
+            </div>
+            <div>
+              <label class="field-label">English</label>
+              <input type="number" id="quotaEng" class="input-field" value="5" min="0">
+            </div>
+            <div>
+              <label class="field-label">Urdu</label>
+              <input type="number" id="quotaUrdu" class="input-field" value="5" min="0">
+            </div>
+          </div>
+
+          <button id="btnGenerateExam" style="width: 100%; margin-top: 12px; background: #00529B; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px;">Generate & Publish Balanced Test</button>
+        </div>
+        
       </div>
 
       <!-- TAB 2: ADD / EDIT QUESTION BUILDER -->
       <div id="tab-add-question" class="tab-content">
+      <!-- BULK IMPORT SECTION -->
+        <div style="background: #f0f7ff; padding: 16px; border-radius: 8px; border: 1px solid #bae6fd; margin-bottom: 24px;">
+          <h4 style="color: #0369a1; font-size: 14px; margin-bottom: 6px;">Bulk Import MCQs from Google Sheets (CSV)</h4>
+          <p style="font-size: 12px; color: #4b5563; margin-bottom: 12px;">
+            Download your Google Sheet as a .CSV file and upload it here to populate the question bank instantly.
+          </p>
+          <div style="display: flex; gap: 10px;">
+            <input type="file" id="csvFileInput" accept=".csv" class="input-field" style="margin: 0; background: white;">
+            <button id="btnUploadCsv" style="background: #16a34a; color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: bold; cursor: pointer; white-space: nowrap;">Import CSV</button>
+          </div>
+        </div>
+        
         <h3 id="formHeaderTitle" style="font-size: 15px; margin-bottom: 16px; color: #00529B;">Add New Question</h3>
         
         <label class="field-label">Subject</label>
@@ -628,6 +674,9 @@
     document.getElementById('cancelEditBtn').addEventListener('click', resetQuestionForm);
     document.getElementById('clearAllQBtn').addEventListener('click', clearAllQuestions);
     document.getElementById('saveDurationBtn').addEventListener('click', saveTestDuration);
+    document.getElementById('btnUploadCsv').addEventListener('click', parseAndUploadCsv);
+    document.getElementById('btnGenerateExam').addEventListener('click', publishBalancedTest);
+    
     document.getElementById('addRegisteredStudentBtn').addEventListener('click', registerStudentInDb);
     document.getElementById('clearLeaderboardBtn').addEventListener('click', clearStudentLeaderboard);
     document.getElementById('downloadLeaderboardPdfBtn').addEventListener('click', () => window.print());
@@ -1204,6 +1253,136 @@
           alert("Error clearing leaderboard: " + e.message);
         }
       }
+          // 1. CSV Parser for Google Sheets Export
+    async function parseAndUploadCsv() {
+      const fileInput = document.getElementById('csvFileInput');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert("Please select a .csv file exported from Google Sheets!");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const text = e.target.result;
+        const rows = parseCsvText(text);
+
+        if (rows.length < 2) {
+          alert("The CSV file is empty or formatted incorrectly.");
+          return;
+        }
+
+        let importedQuestions = [];
+
+        // Skip Header Row (i = 1)
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          if (row.length >= 7 && row[1].trim() !== '') {
+            importedQuestions.push({
+              subject: row[0].trim() || 'General Science',
+              question: row[1].trim(),
+              options: [row[2].trim(), row[3].trim(), row[4].trim(), row[5].trim()],
+              answer: parseInt(row[6].trim(), 10) || 0,
+              imageUrl: row[7] ? row[7].trim() : ''
+            });
+          }
+        }
+
+        if (importedQuestions.length > 0) {
+          questions.push(...importedQuestions);
+          await setDoc(doc(db, "tests", "class7"), { questions: questions }, { merge: true });
+          alert(`Successfully imported ${importedQuestions.length} MCQs into the database!`);
+          fetchCurrentCloudQuestions();
+          fileInput.value = '';
+        } else {
+          alert("No valid question rows were found.");
+        }
+      };
+
+      reader.readAsText(file);
+    }
+
+    // Helper: Parse CSV accounting for quoted sentences and internal commas
+    function parseCsvText(text) {
+      const lines = text.split(/\r\n|\n/);
+      const result = [];
+
+      for (let line of lines) {
+        if (!line.trim()) continue;
+        const row = [];
+        let insideQuotes = false;
+        let entry = '';
+
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+
+          if (char === '"') {
+            insideQuotes = !insideQuotes;
+          } else if (char === ',' && !insideQuotes) {
+            row.push(entry);
+            entry = '';
+          } else {
+            entry += char;
+          }
+        }
+        row.push(entry);
+        result.push(row);
+      }
+      return result;
+    }
+
+    // 2. Subject Quota Selection Generator
+    async function publishBalancedTest() {
+      if (questions.length === 0) {
+        alert("Your question bank is empty! Please upload a CSV or add questions first.");
+        return;
+      }
+
+      const quotas = {
+        'Mathematics': parseInt(document.getElementById('quotaMath').value, 10) || 0,
+        'Physics': parseInt(document.getElementById('quotaPhysics').value, 10) || 0,
+        'Chemistry': parseInt(document.getElementById('quotaChem').value, 10) || 0,
+        'General Science': parseInt(document.getElementById('quotaSci').value, 10) || 0,
+        'English': parseInt(document.getElementById('quotaEng').value, 10) || 0,
+        'Urdu': parseInt(document.getElementById('quotaUrdu').value, 10) || 0
+      };
+
+      let compiledExam = [];
+
+      for (const [subject, requestedCount] of Object.entries(quotas)) {
+        if (requestedCount <= 0) continue;
+
+        // Filter available questions in bank for the current subject
+        let pool = questions.filter(q => (q.subject || '').toLowerCase() === subject.toLowerCase());
+
+        // Fallback: Take requested quota or max available if bank has fewer
+        let countToTake = Math.min(requestedCount, pool.length);
+
+        if (pool.length < requestedCount) {
+          console.warn(`Only ${pool.length} questions available for ${subject}. Taking all available.`);
+        }
+
+        // Shuffle pool and select quota
+        let shuffled = pool.sort(() => 0.5 - Math.random());
+        compiledExam.push(...shuffled.slice(0, countToTake));
+      }
+
+      if (compiledExam.length === 0) {
+        alert("No questions matched your subject quotas. Check your bank's subject tags.");
+        return;
+      }
+
+      // Shuffle final assembled exam so subjects are mixed
+      compiledExam = compiledExam.sort(() => 0.5 - Math.random());
+
+      // Save assembled exam set to active exam record in Firebase
+      await setDoc(doc(db, "tests", "class7"), { questions: compiledExam }, { merge: true });
+      
+      alert(`Success! Published a subject-balanced exam containing ${compiledExam.length} MCQs.`);
+      fetchCurrentCloudQuestions();
+    }
+      
     }
   </script>
 </body>
