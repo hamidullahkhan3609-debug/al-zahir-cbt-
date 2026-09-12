@@ -78,6 +78,32 @@
     /* PAGE 3: TABBED ADMIN DASHBOARD STYLING */
     .admin-container { max-width: 1050px; margin: 20px auto; width: 95%; background: white; border-radius: 10px; border: 1px solid #e5e7eb; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; }
     .admin-header { background: #00529B; color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+/* Mobile-Friendly Horizontal Scroll Navigation with Emojis */
+.admin-tabs-nav {
+  display: flex !important;
+  gap: 8px !important;
+  margin-bottom: 20px !important;
+  border-bottom: 2px solid #e5e7eb !important;
+  padding-bottom: 6px !important;
+  overflow-x: auto !important;
+  white-space: nowrap !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: none; /* Hide scrollbar Firefox */
+}
+
+.admin-tabs-nav::-webkit-scrollbar {
+  display: none; /* Hide scrollbar Chrome/Safari */
+}
+
+.admin-tabs-nav .nav-tab-btn {
+  flex: 0 0 auto !important;
+  padding: 8px 14px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  border-radius: 6px 6px 0 0 !important;
+  white-space: nowrap !important;
+}
+    
     
     /* DASHBOARD TAB NAVIGATION */
     .admin-nav-tabs { display: flex; background: #003d73; border-bottom: 1px solid #002b52; overflow-x: auto; }
@@ -300,15 +326,16 @@
         <div style="font-size: 12px; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 4px;">System Control</div>
       </div>
 
-  <!-- Admin Navigation Tabs -->
-  <div style="display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">
-    <button class="nav-tab-btn active" onclick="switchAdminTab('overview')">Duration & Status</button>
-    <button class="nav-tab-btn" onclick="switchAdminTab('add-question')">Add Question</button>
-    <button class="nav-tab-btn" onclick="switchAdminTab('question-bank')">Active Bank (<span id="tabQCount">0</span>)</button>
-    <button class="nav-tab-btn" onclick="switchAdminTab('question-cloud')">Question Cloud (<span id="tabCloudQCount">0</span>)</button>
-    <button class="nav-tab-btn" onclick="switchAdminTab('register-students')">Register Students</button>
-    <button class="nav-tab-btn" onclick="switchAdminTab('leaderboard')">Leaderboard</button>
-  </div>
+          <!-- Mobile-Optimized Admin Navigation Tabs with Emojis -->
+        <div class="admin-tabs-nav">
+          <button class="nav-tab-btn active" onclick="switchAdminTab('overview')">⏱️ Duration & Status</button>
+          <button class="nav-tab-btn" onclick="switchAdminTab('add-question')">➕ Add Question</button>
+          <button class="nav-tab-btn" onclick="switchAdminTab('question-bank')">📚 Active Bank (<span id="tabQCount">0</span>)</button>
+          <button class="nav-tab-btn" onclick="switchAdminTab('question-cloud')">☁️ Question Cloud (<span id="tabCloudQCount">0</span>)</button>
+          <button class="nav-tab-btn" onclick="switchAdminTab('register-students')">👥 Register Students</button>
+          <button class="nav-tab-btn" onclick="switchAdminTab('leaderboard')">🏆 Leaderboard</button>
+        </div>
+
 
 
       <!-- TAB 1: OVERVIEW & DURATION SETTINGS -->
