@@ -479,27 +479,31 @@
         </div>
       </div>
 
-      <!-- TAB: QUESTION CLOUD ARCHIVE -->
-<div id="tab-question-cloud" class="tab-content">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-    <h3 style="color: #00529B; margin: 0;">Central Question Cloud Archive</h3>
-    <button id="btnClearCloudBtn" style="background: #dc2626; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer;">Clear Question Cloud</button>
-  </div>
-  <table class="data-table">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Subject</th>
-        <th>Question</th>
-        <th>Options</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody id="questionCloudTableBody">
-      <tr><td colspan="5" style="text-align:center;">Loading cloud repository...</td></tr>
-    </tbody>
-  </table>
-</div>
+    <!-- TAB: QUESTION CLOUD ARCHIVE -->
+    <div id="tab-question-cloud" class="tab-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="font-size: 15px; color: #00529B; margin: 0;">Central Question Cloud (<span id="cloudRepoCount">0</span> Questions)</h3>
+        <button id="btnClearCloudBtn" style="background: #dc2626; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px;">Clear Question Cloud</button>
+      </div>
+      
+      <div class="table-wrapper">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Subject</th>
+              <th>Question</th>
+              <th>Options</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="questionCloudTableBody">
+            <tr><td colspan="5" style="text-align:center; color:#6b7280;">Loading cloud repository...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
       
 
       <!-- TAB 4: REGISTER STUDENTS -->
@@ -1105,24 +1109,42 @@
       if (!tbody) return;
       tbody.innerHTML = '';
 
+      const cloudRepoCountEl = document.getElementById('cloudRepoCount');
+      if (cloudRepoCountEl) cloudRepoCountEl.innerText = cloudList.length;
+
       if (cloudList.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#6b7280;">Question Cloud is currently empty. Upload CSV to add questions.</td></tr>';
         return;
       }
 
       cloudList.forEach((q, idx) => {
+        const isUrduQ = /[\u0600-\u06FF]/.test(q.question);
         const tr = document.createElement('tr');
+        
         tr.innerHTML = `
           <td>${idx + 1}</td>
           <td><span class="subject-tag">${q.subject || 'General Science'}</span></td>
-          <td>${q.question} ${q.imageUrl ? '<br><small style="color:#00529B;">[Has Image]</small>' : ''}</td>
-          <td><small>A: ${q.options[0]}<br>B: ${q.options[1]}<br>C: ${q.options[2]}<br>D: ${q.options[3]}</small></td>
+          <td class="${isUrduQ ? 'urdu-text' : ''}">${q.question} ${q.imageUrl ? '<br><small style="color:#00529B;">[Has Image]</small>' : ''}</td>
+          <td>
+            <small>
+              A: ${q.options[0]}<br>
+              B: ${q.options[1]}<br>
+              C: ${q.options[2]}<br>
+              D: ${q.options[3]}
+            </small>
+          </td>
           <td>
             <button class="btn-delete" onclick="deleteCloudQuestion(${idx})">Delete</button>
           </td>
         `;
         tbody.appendChild(tr);
       });
+
+      if (window.MathJax && window.MathJax.typesetPromise) {
+        window.MathJax.typesetPromise();
+      }
+    }
+);
     }
 
     window.deleteCloudQuestion = async function(idx) {
