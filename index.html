@@ -300,14 +300,16 @@
         <div style="font-size: 12px; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 4px;">System Control</div>
       </div>
 
-      <!-- DASHBOARD TABS NAVIGATION BAR -->
-      <div class="admin-nav-tabs no-print">
-        <button class="nav-tab-btn active" onclick="switchAdminTab('overview')">⏱️ Duration & Status</button>
-        <button class="nav-tab-btn" onclick="switchAdminTab('add-question')">➕ Add Question</button>
-        <button class="nav-tab-btn" onclick="switchAdminTab('question-bank')">📚 Question Bank (<span id="tabQCount">0</span>)</button>
-        <button class="nav-tab-btn" onclick="switchAdminTab('students')">👥 Register Students</button>
-        <button class="nav-tab-btn" onclick="switchAdminTab('leaderboard')">🏆 Leaderboard</button>
-      </div>
+  <!-- Admin Navigation Tabs -->
+  <div style="display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">
+    <button class="nav-tab-btn active" onclick="switchAdminTab('overview')">Duration & Status</button>
+    <button class="nav-tab-btn" onclick="switchAdminTab('add-question')">Add Question</button>
+    <button class="nav-tab-btn" onclick="switchAdminTab('question-bank')">Active Bank (<span id="tabQCount">0</span>)</button>
+    <button class="nav-tab-btn" onclick="switchAdminTab('question-cloud')">Question Cloud (<span id="tabCloudQCount">0</span>)</button>
+    <button class="nav-tab-btn" onclick="switchAdminTab('register-students')">Register Students</button>
+    <button class="nav-tab-btn" onclick="switchAdminTab('leaderboard')">Leaderboard</button>
+  </div>
+
 
       <!-- TAB 1: OVERVIEW & DURATION SETTINGS -->
       <div id="tab-overview" class="tab-content active">
@@ -449,6 +451,29 @@
           </table>
         </div>
       </div>
+
+      <!-- TAB: QUESTION CLOUD ARCHIVE -->
+<div id="tab-question-cloud" class="tab-content">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+    <h3 style="color: #00529B; margin: 0;">Central Question Cloud Archive</h3>
+    <button id="btnClearCloudBtn" style="background: #dc2626; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer;">Clear Question Cloud</button>
+  </div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Subject</th>
+        <th>Question</th>
+        <th>Options</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="questionCloudTableBody">
+      <tr><td colspan="5" style="text-align:center;">Loading cloud repository...</td></tr>
+    </tbody>
+  </table>
+</div>
+      
 
       <!-- TAB 4: REGISTER STUDENTS -->
       <div id="tab-students" class="tab-content">
@@ -614,7 +639,14 @@
       // BULK CSV & QUOTA GENERATOR LISTENERS
       document.getElementById('btnUploadCsv')?.addEventListener('click', parseAndUploadCsv);
       document.getElementById('btnGenerateExam')?.addEventListener('click', publishBalancedTest);
-
+      document.getElementById('btnClearCloudBtn')?.addEventListener('click', async () => {
+        if (confirm("Are you sure you want to permanently delete ALL questions in the Question Cloud?")) {
+          await setDoc(doc(db, "question_cloud", "all_mcqs"), { questions: [] });
+          alert("Question Cloud repository cleared successfully!");
+          fetchCurrentCloudQuestions();
+        }
+    });
+                                                                   
       document.getElementById('addRegisteredStudentBtn')?.addEventListener('click', registerStudentInDb);
       document.getElementById('clearLeaderboardBtn')?.addEventListener('click', clearStudentLeaderboard);
       document.getElementById('downloadLeaderboardPdfBtn')?.addEventListener('click', () => window.print());
@@ -1015,6 +1047,7 @@
     };
 
     async function fetchCurrentCloudQuestions() {
+      // 1. Fetch Active Test Questions
       const docSnap = await getDoc(doc(db, "tests", "class7"));
       if (docSnap.exists()) {
         const data = docSnap.data();
@@ -1029,6 +1062,54 @@
       document.getElementById('tabQCount').innerText = questions.length;
       document.getElementById('overviewQCount').innerText = questions.length;
       renderQuestionBankTable();
+
+      // 2. Fetch Central Question Cloud Repository
+      const cloudSnap = await getDoc(doc(db, "question_cloud", "all_mcqs"));
+      let cloudQuestions = [];
+      if (cloudSnap.exists()) {
+        cloudQuestions = cloudSnap.data().questions || [];
+      }
+      document.getElementById('tabCloudQCount').innerText = cloudQuestions.length;
+      renderCloudArchiveTable(cloudQuestions);
+    }
+
+    function renderCloudArchiveTable(cloudList) {
+      const tbody = document.getElementById('questionCloudTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      if (cloudList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#6b7280;">Question Cloud is currently empty. Upload CSV to add questions.</td></tr>';
+        return;
+      }
+
+      cloudList.forEach((q, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td><span class="subject-tag">${q.subject || 'General Science'}</span></td>
+          <td>${q.question} ${q.imageUrl ? '<br><small style="color:#00529B;">[Has Image]</small>' : ''}</td>
+          <td><small>A: ${q.options[0]}<br>B: ${q.options[1]}<br>C: ${q.options[2]}<br>D: ${q.options[3]}</small></td>
+          <td>
+            <button class="btn-delete" onclick="deleteCloudQuestion(${idx})">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.deleteCloudQuestion = async function(idx) {
+      if (confirm(`Remove Question #${idx + 1} from permanent Cloud?`)) {
+        const cloudSnap = await getDoc(doc(db, "question_cloud", "all_mcqs"));
+        if (cloudSnap.exists()) {
+          let cloudList = cloudSnap.data().questions || [];
+          cloudList.splice(idx, 1);
+          await setDoc(doc(db, "question_cloud", "all_mcqs"), { questions: cloudList });
+          fetchCurrentCloudQuestions();
+        }
+      }
+    };
+renderQuestionBankTable();
     }
 
     function renderQuestionBankTable() {
