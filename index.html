@@ -726,13 +726,19 @@
       }
     }
 
-    window.switchAdminTab = function(tabName) {
+    window.switchAdminTab = function(tabName, evt) {
       document.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
-      event.target.classList.add('active');
-      document.getElementById(`tab-${tabName}`).classList.add('active');
+      const activeBtn = evt ? evt.target : (typeof event !== 'undefined' ? event.target : null);
+      if (activeBtn) {
+        activeBtn.classList.add('active');
+      }
+      
+      const targetTab = document.getElementById(`tab-${tabName}`);
+      if (targetTab) targetTab.classList.add('active');
     };
+
 
     document.getElementById('studentPage').addEventListener('contextmenu', e => e.preventDefault());
     document.addEventListener('keydown', e => {
