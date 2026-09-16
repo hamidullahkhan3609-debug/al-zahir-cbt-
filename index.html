@@ -963,67 +963,58 @@
           return;
         }
       }
-      document.getElementById('submitModal').classList.remove('hidden');
-    }
-
-    function renderSkipped() {
-      const grid = document.getElementById('skippedGrid');
-      grid.innerHTML = '';
-      skippedList.forEach(idx => {
-        const btn = document.createElement('button');
-        btn.className = "skip-num-btn";
-        btn.innerText = idx + 1;
-        btn.onclick = () => {
-          currentIndex = idx;
-          renderQuestion();
-        };
-        grid.appendChild(btn);
-      });
-    }
-
-    function updateProgressBar() {
-      if (questions.length === 0) return;
-      const total = questions.length;
-      const completed = Object.keys(lockedAnswers).length;
-      const pct = Math.round((completed / total) * 100);
-      document.getElementById('progressBar').style.width = pct + '%';
-      document.getElementById('progressPercent').innerText = pct + '%';
+      document.getElementById('submitModal')?.classList.remove('hidden');
     }
 
     async function finishTest() {
       clearInterval(timerInterval);
+      timerInterval = null;
       let score = 0;
 
-      questions.forEach((q, idx) => {
-        const studentAns = lockedAnswers[idx];
-        const correctAns = Number(q.answer);
+      if (questions.length > 0) {
+        questions.forEach((q, idx) => {
+          const studentAns = lockedAnswers[idx];
+          const correctAns = Number(q.answer);
 
-        if (studentAns !== undefined && studentAns === correctAns) {
-          score++;
-        }
-      });
-
-      const percentage = Math.round((score / questions.length) * 100);
-
-      if (studentDocId) {
-        await updateDoc(doc(db, "students", studentDocId), {
-          score: `${score} / ${questions.length}`,
-          percentage: `${percentage}%`,
-          completedAt: new Date().toISOString()
+          if (studentAns !== undefined && studentAns === correctAns) {
+            score++;
+          }
         });
       }
 
-      document.getElementById('resName').innerText = studentName;
-      document.getElementById('resFather').innerText = studentFather;
-      document.getElementById('resId').innerText = studentId;
-      document.getElementById('finalScore').innerText = `${score} / ${questions.length}`;
-      document.getElementById('finalPercent').innerText = `Percentage: ${percentage}%`;
+      const totalQs = questions.length > 0 ? questions.length : 1;
+      const percentage = Math.round((score / totalQs) * 100);
+
+      try {
+        if (studentDocId) {
+          await updateDoc(doc(db, "students", studentDocId), {
+            score: `${score} / ${questions.length}`,
+            percentage: `${percentage}%`,
+            completedAt: new Date().toISOString()
+          });
+        }
+      } catch (err) {
+        console.warn("Network delay during sync, presenting score card:", err);
+      }
+
+      const resNameEl = document.getElementById('resName');
+      const resFatherEl = document.getElementById('resFather');
+      const resIdEl = document.getElementById('resId');
+      const finalScoreEl = document.getElementById('finalScore');
+      const finalPercentEl = document.getElementById('finalPercent');
+
+      if (resNameEl) resNameEl.innerText = studentName;
+      if (resFatherEl) resFatherEl.innerText = studentFather;
+      if (resIdEl) resIdEl.innerText = studentId;
+      if (finalScoreEl) finalScoreEl.innerText = `${score} / ${questions.length}`;
+      if (finalPercentEl) finalPercentEl.innerText = `Percentage: ${percentage}%`;
 
       document.title = `${studentName}(${studentId})_cbt_result`;
 
-      studentPage.classList.remove('active');
-      resultPage.classList.add('active');
+      studentPage?.classList.remove('active');
+      resultPage?.classList.add('active');
     }
+
 
     async function registerStudentInDb() {
       const name = document.getElementById('regName').value.trim();
