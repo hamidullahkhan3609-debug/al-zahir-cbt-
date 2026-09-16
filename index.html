@@ -809,16 +809,20 @@
         document.getElementById('candName').innerText = studentName;
         document.getElementById('candFather').innerText = studentFather;
         document.getElementById('candId').innerText = studentId;
+await setDoc(
+  doc(db, "students", studentId),
+  {
+    studentId: studentId,
+    name: studentName,
+    fatherName: studentFather,
+    loginTime: new Date().toISOString(),
+    score: "Pending Submission",
+    percentage: "Pending",
+    completedAt: null
+  }
+);
 
-        const docRef = await addDoc(collection(db, "students"), {
-          studentId: studentId,
-          name: studentName,
-          fatherName: studentFather,
-          loginTime: new Date().toISOString(),
-          score: "Pending Submission",
-          percentage: "Pending"
-        });
-        studentDocId = docRef.id;
+studentDocId = studentId;
 
         loginModal.classList.add('hidden');
         loadTestConfigurationForRules();
@@ -1356,71 +1360,201 @@
       }
     }
 
-    async function loadStudentLeaderboard() {
-      const tbody = document.getElementById('studentLeaderboardBody');
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading...</td></tr>';
-      
-      try {
-        const registeredSnapshot = await getDocs(collection(db, "registered_students"));
-        
-        if (registeredSnapshot.empty) {
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#6b7280;">No pre-registered students found.</td></tr>';
-          document.getElementById('overviewExamCount').innerText = 0;
-          return;
-        }
+    
+async function loadStudentLeaderboard() {
+  const tbody = document.getElementById('studentLeaderboardBody');
 
-        const resultsSnapshot = await getDocs(collection(db, "students"));
-        const resultMap = {};
+  if (!tbody) return;
 
-        resultsSnapshot.forEach(docSnap => {
-          const data = docSnap.data();
-          if (data.studentId) {
-            resultMap[data.studentId.trim().toLowerCase()] = data;
-          }
-        });
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="6" style="text-align:center;">
+        Loading...
+      </td>
+    </tr>
+  `;
 
-        tbody.innerHTML = '';
-        let index = 1;
-        let completedCount = 0;
+  try {
+    const registeredSnapshot = await getDocs(
+      collection(db, "registered_students")
+    );
 
-        registeredSnapshot.forEach(docSnap => {
-          const reg = docSnap.data();
-          const sKey = (reg.studentId || '').trim().toLowerCase();
-          const testData = resultMap[sKey];
+    if (registeredSnapshot.empty) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align:center; color:#6b7280;">
+            No pre-registered students found.
+          </td>
+        </tr>
+      `;
 
-          const tr = document.createElement('tr');
-
-          if (testData && testData.score !== "Pending Submission") {
-            completedCount++;
-            tr.innerHTML = `
-              <td>${index++}</td>
-              <td><strong style="color:#00529B;">${reg.studentId}</strong></td>
-              <td><strong>${reg.name}</strong></td>
-              <td>${reg.fatherName}</td>
-              <td><strong style="color:#00529B;">${testData.score}</strong></td>
-              <td><span style="color:#16a34a; font-weight:bold;">${testData.percentage}</span></td>
-            `;
-          } else {
-            tr.innerHTML = `
-              <td>${index++}</td>
-              <td><strong style="color:#00529B;">${reg.studentId}</strong></td>
-              <td><strong>${reg.name}</strong></td>
-              <td>${reg.fatherName}</td>
-              <td><span style="color:#dc2626; font-style:italic;">Not Attempted</span></td>
-              <td><span style="color:#6b7280;">--</span></td>
-            `;
-          }
-
-          tbody.appendChild(tr);
-        });
-
-        document.getElementById('overviewExamCount').innerText = completedCount;
-
-      } catch (e) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#dc2626;">Failed to fetch leaderboard records.</td></tr>';
-      }
+      document.getElementById('overviewExamCount').innerText = 0;
+      return;
     }
 
+    const resultsSnapshot = await getDocs(
+      collection(db, "students")
+    );
+
+    const resultMap = {};
+
+    // Build result map.
+    // If duplicate records exist for the same Student ID,
+    // ALWAYS prefer a completed result over Pending Submission.
+    resultsSnapshot.forEach(docSnap => {
+      const data = docSnap.data();
+
+      if (!data.studentId) return;
+
+      const key = data.studentId.trim().toLowerCase();
+
+      const existing = resultMap[key];
+
+      // No previous record
+      if (!existing) {
+        resultMap[key] = data;
+        return;
+      }
+
+      const existingCompleted =
+        existing.score &&
+        existing.score !== "Pending Submission";
+
+      const currentCompleted =
+        data.score &&
+        data.score !== "Pending Submission";
+
+      // Prefer completed result
+      if (currentCompleted && !existingCompleted) {
+        resultMap[key] = data;
+        return;
+      }
+
+      // If both are completed, prefer the latest completed result
+      if (currentCompleted && existingCompleted) {
+        const existingTime = existing.completedAt
+          ? new Date(existing.completedAt).getTime()
+          : 0;
+
+        const currentTime = data.completedAt
+          ? new Date(data.completedAt).getTime()
+          : 0;
+
+        if (currentTime >= existingTime) {
+          resultMap[key] = data;
+        }
+      }
+    });
+
+    tbody.innerHTML = '';
+
+    let index = 1;
+    let completedCount = 0;
+
+    registeredSnapshot.forEach(docSnap => {
+      const reg = docSnap.data();
+
+      const sKey = (reg.studentId || '')
+        .trim()
+        .toLowerCase();
+
+      const testData = resultMap[sKey];
+
+      const tr = document.createElement('tr');
+
+      if (
+        testData &&
+        testData.score &&
+        testData.score !== "Pending Submission"
+      ) {
+        completedCount++;
+
+        tr.innerHTML = `
+          <td>${index++}</td>
+
+          <td>
+            <strong style="color:#00529B;">
+              ${reg.studentId}
+            </strong>
+          </td>
+
+          <td>
+            <strong>
+              ${reg.name}
+            </strong>
+          </td>
+
+          <td>
+            ${reg.fatherName}
+          </td>
+
+          <td>
+            <strong style="color:#00529B;">
+              ${testData.score}
+            </strong>
+          </td>
+
+          <td>
+            <span style="color:#16a34a; font-weight:bold;">
+              ${testData.percentage}
+            </span>
+          </td>
+        `;
+      } else {
+        tr.innerHTML = `
+          <td>${index++}</td>
+
+          <td>
+            <strong style="color:#00529B;">
+              ${reg.studentId}
+            </strong>
+          </td>
+
+          <td>
+            <strong>
+              ${reg.name}
+            </strong>
+          </td>
+
+          <td>
+            ${reg.fatherName}
+          </td>
+
+          <td>
+            <span style="color:#dc2626; font-style:italic;">
+              Not Attempted
+            </span>
+          </td>
+
+          <td>
+            <span style="color:#6b7280;">
+              --
+            </span>
+          </td>
+        `;
+      }
+
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('overviewExamCount').innerText =
+      completedCount;
+
+  } catch (e) {
+    console.error("LEADERBOARD ERROR:", e);
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6"
+            style="text-align:center; color:#dc2626;">
+          Failed to fetch leaderboard records.
+        </td>
+      </tr>
+    `;
+  }
+}  
+
+      
     async function clearStudentLeaderboard() {
       if (confirm("Are you sure you want to delete all student records from the leaderboard?")) {
         try {
