@@ -878,56 +878,68 @@
       }, 1000);
     }
 
+
     function renderQuestion() {
-      if (questions.length === 0) return;
+      if (!questions || questions.length === 0) return;
       const q = questions[currentIndex];
 
-      document.getElementById('questionCounter').innerText = `Question No ${currentIndex + 1} out of ${questions.length}`;
-      document.getElementById('subjectBadge').innerText = q.subject || 'General';
-      document.getElementById('currentSubjectTag').innerText = q.subject || 'General';
+      const qCounter = document.getElementById('questionCounter');
+      const sBadge = document.getElementById('subjectBadge');
+      const cSubject = document.getElementById('currentSubjectTag');
+
+      if (qCounter) qCounter.innerText = `Question No ${currentIndex + 1} out of ${questions.length}`;
+      if (sBadge) sBadge.innerText = q.subject || 'General';
+      if (cSubject) cSubject.innerText = q.subject || 'General';
 
       const qTextEl = document.getElementById('questionText');
-      qTextEl.innerText = q.question;
-      if (/[\u0600-\u06FF]/.test(q.question)) {
-        qTextEl.classList.add('urdu-text');
-      } else {
-        qTextEl.classList.remove('urdu-text');
+      if (qTextEl) {
+        qTextEl.innerText = q.question;
+        if (/[\u0600-\u06FF]/.test(q.question)) {
+          qTextEl.classList.add('urdu-text');
+        } else {
+          qTextEl.classList.remove('urdu-text');
+        }
       }
 
       const imgEl = document.getElementById('questionImage');
-      if (q.imageUrl && q.imageUrl.trim() !== '') {
-        imgEl.src = q.imageUrl;
-        imgEl.classList.remove('hidden');
-      } else {
-        imgEl.classList.add('hidden');
+      if (imgEl) {
+        if (q.imageUrl && q.imageUrl.trim() !== '') {
+          imgEl.src = q.imageUrl;
+          imgEl.classList.remove('hidden');
+        } else {
+          imgEl.classList.add('hidden');
+        }
       }
 
       const container = document.getElementById('optionsContainer');
-      container.innerHTML = '';
+      if (container) {
+        container.innerHTML = '';
 
-      q.options.forEach((opt, idx) => {
-        const isUrdu = /[\u0600-\u06FF]/.test(opt);
-        const label = document.createElement('label');
-        label.className = `option-item ${isUrdu ? 'urdu-text' : ''}`;
-        
-        const radio = document.createElement('input');
-        radio.type = 'radio';
-        radio.name = 'opt';
-        radio.value = idx;
+        q.options.forEach((opt, idx) => {
+          const isUrdu = /[\u0600-\u06FF]/.test(opt);
+          const label = document.createElement('label');
+          label.className = `option-item ${isUrdu ? 'urdu-text' : ''}`;
+          
+          const radio = document.createElement('input');
+          radio.type = 'radio';
+          radio.name = 'opt';
+          radio.value = idx;
 
-        if (lockedAnswers[currentIndex] !== undefined && Number(lockedAnswers[currentIndex]) === idx) {
-          radio.checked = true;
-        }
-        
-        const span = document.createElement('span');
-        span.innerText = opt;
+          if (lockedAnswers[currentIndex] !== undefined && Number(lockedAnswers[currentIndex]) === idx) {
+            radio.checked = true;
+          }
+          
+          const span = document.createElement('span');
+          span.innerText = opt;
 
-        label.appendChild(radio);
-        label.appendChild(span);
-        container.appendChild(label);
-      });
+          label.appendChild(radio);
+          label.appendChild(span);
+          container.appendChild(label);
+        });
+      }
 
       updateProgressBar();
+      renderSkipped(); // <-- FIXED: Keeps skipped sidebar updated dynamically
 
       if (window.MathJax && window.MathJax.typesetPromise) {
         window.MathJax.typesetPromise();
@@ -943,13 +955,11 @@
         renderSkipped();
         nextAvailableQuestion();
       } else if (lockedAnswers[currentIndex] !== undefined) {
-        // If question was previously saved/locked, allow moving forward
         nextAvailableQuestion();
       } else {
         alert("Please select an answer first!");
       }
     }
-
 
     function skipQuestion() {
       if (!skippedList.includes(currentIndex) && lockedAnswers[currentIndex] === undefined) {
@@ -960,6 +970,7 @@
     }
 
     function nextAvailableQuestion() {
+      // Look for the next unanswered question
       for (let i = 0; i < questions.length; i++) {
         let checkIndex = (currentIndex + 1 + i) % questions.length;
         if (lockedAnswers[checkIndex] === undefined) {
@@ -968,7 +979,30 @@
           return;
         }
       }
-      document.getElementById('submitModal')?.classList.remove('hidden');
+      
+      // If all questions are answered, check if we're on the last question or show submit modal
+      const submitModal = document.getElementById('submitModal');
+      if (submitModal) {
+        submitModal.classList.remove('hidden');
+      }
+    }
+
+    function renderSkipped() {
+      const grid = document.getElementById('skippedGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      skippedList.forEach(idx => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'skip-num-btn';
+        btn.innerText = `Q${idx + 1}`;
+        btn.onclick = () => {
+          currentIndex = idx;
+          renderQuestion();
+        };
+        grid.appendChild(btn);
+      });
     }
 
     async function finishTest() {
@@ -1019,7 +1053,7 @@
       studentPage?.classList.remove('active');
       resultPage?.classList.add('active');
     }
-
+        
 
     async function registerStudentInDb() {
       const name = document.getElementById('regName').value.trim();
