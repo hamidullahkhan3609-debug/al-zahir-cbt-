@@ -1005,6 +1005,20 @@
       });
     }
 
+    function updateProgressBar() {
+      if (!questions || questions.length === 0) return;
+      const total = questions.length;
+      const completed = Object.keys(lockedAnswers).length;
+      const pct = Math.round((completed / total) * 100);
+
+      const pb = document.getElementById('progressBar');
+      const pp = document.getElementById('progressPercent');
+
+      if (pb) pb.style.width = `${pct}%`;
+      if (pp) pp.innerText = `${pct}%`;
+    }
+        
+  
     async function finishTest() {
       clearInterval(timerInterval);
       timerInterval = null;
