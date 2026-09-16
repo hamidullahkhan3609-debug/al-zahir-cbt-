@@ -936,15 +936,20 @@
 
     function saveAndNext() {
       const selectedRadio = document.querySelector('input[name="opt"]:checked');
+      
       if (selectedRadio) {
         lockedAnswers[currentIndex] = parseInt(selectedRadio.value, 10);
         skippedList = skippedList.filter(idx => idx !== currentIndex);
         renderSkipped();
         nextAvailableQuestion();
+      } else if (lockedAnswers[currentIndex] !== undefined) {
+        // If question was previously saved/locked, allow moving forward
+        nextAvailableQuestion();
       } else {
         alert("Please select an answer first!");
       }
     }
+
 
     function skipQuestion() {
       if (!skippedList.includes(currentIndex) && lockedAnswers[currentIndex] === undefined) {
