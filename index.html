@@ -173,7 +173,200 @@
       .tab-content { display: none !important; }
       #tab-leaderboard { display: block !important; }
     }
+/* =========================================================
+   VIBRANT LEADERBOARD PDF DESIGN
+   ========================================================= */
 
+@media print {
+
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  /* PDF page background */
+  body {
+    background: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Leaderboard print area */
+  #tab-leaderboard {
+    display: block !important;
+    width: 100% !important;
+    padding: 18px 12px 25px !important;
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Academy heading */
+  #tab-leaderboard::before {
+    content: "AL-ZAHIR ETEA COACHING ACADEMY";
+    display: block;
+    text-align: center;
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    color: #ffffff !important;
+    background: linear-gradient(
+      135deg,
+      #123b9d,
+      #4b27b8,
+      #6d28d9
+    ) !important;
+    padding: 24px 15px 20px;
+    border-radius: 18px 18px 0 0;
+    border-bottom: 5px solid #f4bd27;
+  }
+
+  /* Hide the original button area */
+  #tab-leaderboard > div:first-child .no-print {
+    display: none !important;
+  }
+
+  /* Main title */
+  #tab-leaderboard h3 {
+    text-align: center !important;
+    font-size: 24px !important;
+    font-weight: 900 !important;
+    color: #123b7a !important;
+    margin: 24px 0 22px !important;
+    letter-spacing: .3px;
+  }
+
+  /* Add decorative line around title */
+  #tab-leaderboard h3::before {
+    content: "✦";
+    color: #f0b323 !important;
+    margin-right: 12px;
+  }
+
+  #tab-leaderboard h3::after {
+    content: "✦";
+    color: #f0b323 !important;
+    margin-left: 12px;
+  }
+
+  /* Table container */
+  #tab-leaderboard .table-wrapper {
+    width: 100% !important;
+    overflow: visible !important;
+    border-radius: 14px !important;
+    border: 1px solid #b8cdf5 !important;
+    box-shadow: 0 5px 18px rgba(30, 64, 175, 0.12) !important;
+  }
+
+  /* Main table */
+  #tab-leaderboard table.custom-table {
+    width: 100% !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    overflow: hidden !important;
+    border-radius: 14px !important;
+    font-size: 12px !important;
+  }
+
+  /* Table header */
+  #tab-leaderboard table.custom-table thead th {
+    background: linear-gradient(
+      135deg,
+      #123b9d,
+      #4b27b8
+    ) !important;
+
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    text-align: center !important;
+    padding: 14px 8px !important;
+    border: none !important;
+    border-right: 1px solid rgba(255,255,255,.22) !important;
+    letter-spacing: .2px;
+  }
+
+  /* Table body cells */
+  #tab-leaderboard table.custom-table tbody td {
+    padding: 14px 9px !important;
+    text-align: center !important;
+    border-right: 1px solid #d8e3f7 !important;
+    border-bottom: 1px solid #d8e3f7 !important;
+    color: #172554 !important;
+    background: #ffffff !important;
+    font-weight: 600 !important;
+  }
+
+  /* Alternating rows */
+  #tab-leaderboard table.custom-table tbody tr:nth-child(even) td {
+    background: #eef5ff !important;
+  }
+
+  /* Student ID */
+  #tab-leaderboard table.custom-table tbody td:nth-child(2) {
+    color: #1769d1 !important;
+    font-weight: 800 !important;
+  }
+
+  /* Student name */
+  #tab-leaderboard table.custom-table tbody td:nth-child(3) {
+    color: #172554 !important;
+    font-weight: 800 !important;
+  }
+
+  /* Marks */
+  #tab-leaderboard table.custom-table tbody td:nth-child(5) {
+    color: #119447 !important;
+    font-weight: 900 !important;
+    font-size: 13px !important;
+  }
+
+  /* Percentage */
+  #tab-leaderboard table.custom-table tbody td:nth-child(6) {
+    color: #119447 !important;
+    font-weight: 900 !important;
+    font-size: 13px !important;
+  }
+
+  /* Rounded top corners */
+  #tab-leaderboard table.custom-table thead th:first-child {
+    border-top-left-radius: 13px !important;
+  }
+
+  #tab-leaderboard table.custom-table thead th:last-child {
+    border-top-right-radius: 13px !important;
+  }
+
+  /* Rounded bottom corners */
+  #tab-leaderboard table.custom-table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 13px !important;
+  }
+
+  #tab-leaderboard table.custom-table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 13px !important;
+  }
+
+  /* Bottom footer decoration */
+  #tab-leaderboard::after {
+    content: "Official Examination Record  •  AL-ZAHIR ETEA COACHING ACADEMY";
+    display: block;
+    text-align: center;
+    margin-top: 330px;
+    padding: 14px 10px;
+    border-top: 2px solid #d7a91e;
+    color: #123b7a !important;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .4px;
+  }
+
+  /* Prevent table from splitting across pages */
+  #tab-leaderboard .table-wrapper,
+  #tab-leaderboard table {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+    }
+    
     @media (max-width: 768px) {
       .main-layout { flex-direction: column; overflow: visible; }
       .profile-sidebar { width: 100%; border-right: none; border-bottom: 1px solid #e5e7eb; flex-direction: row; flex-wrap: wrap; justify-content: space-between; }
